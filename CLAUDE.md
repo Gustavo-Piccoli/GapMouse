@@ -1,40 +1,61 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Este arquivo orienta o Claude Code (claude.ai/code) ao trabalhar neste repositório.
 
 ## Visão geral
 
-Este repositório está se tornando o GapMouse, um app .NET 10 para Windows que mantém o PC ativo. Design: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`. Plano 1: `docs/superpowers/plans/2026-10-31-gapmouse-plan-1-foundation-engine.md`.
+GapMouse é um utilitário .NET 10 para Windows que mantém o PC ativo (evita bloqueio de tela e suspensão) movendo o mouse quando o usuário está ocioso. É a reescrita do script PowerShell original, que continua em `legacy/` (`MOUSE.ps1`, `MOUSE.bat`) apenas como referência.
 
-Projetos atuais: `src/GapMouse.Domain`, `src/GapMouse.Application`, `src/GapMouse.Infrastructure` e `tests/*`. Comandos: `dotnet build` e `dotnet test` (o runner de testes é Microsoft.Testing.Platform, habilitado em `global.json`).
+Estado atual: Plano 1 (fundação + motor headless + console de desenvolvimento). Roadmap: Plano 2 persistência e integração com o sistema; Plano 3 app desktop Avalonia (bandeja, abas, temas, i18n); Plano 4 distribuição (instalador, portátil, winget).
 
-Os scripts originais ficam em `legacy/` (`legacy/MOUSE.ps1`, `legacy/MOUSE.bat`). São um utilitário Windows de dois arquivos que mantém o PC ativo (evita bloqueio de tela/suspensão) movendo o mouse quando o usuário está ocioso. Os comentários e mensagens desses scripts são em português (sem acentos nos arquivos).
+## Documentação
 
-- `legacy/MOUSE.ps1` — toda a lógica (Windows PowerShell 5.1, usa `System.Windows.Forms` e P/Invoke via `Add-Type`).
-- `legacy/MOUSE.bat` — launcher: define os parâmetros e chama `powershell.exe -NoProfile -ExecutionPolicy Bypass -File`. Usa caminho relativo (`%~dp0MOUSE.ps1`).
+- Spec: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`
+- Planos: `docs/superpowers/plans/`
+- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada)
 
-## Executar (scripts legados)
+## Projetos e responsabilidades
+
+- `src/GapMouse.Domain` — núcleo puro e síncrono: `KeepAwakeEngine` (máquina de estados), planejamento de trajetória (`MovementPathPlanner`), `EngineSettings` e validação. Sem I/O.
+- `src/GapMouse.Application` — portas em `Abstractions/` (cursor, ociosidade, limites de monitor, power requests) e `EngineHost`, que executa o motor.
+- `src/GapMouse.Infrastructure` — adaptadores Win32 em `Win32/` e fonte de aleatoriedade.
+- `tools/GapMouse.DevConsole` — console Native AOT só para desenvolvedores (não é distribuído). Flags: `--idle`, `--check`, `--min`, `--max`, `--amplitude`, `--display on|off` (padrões de `EngineSettings.Default`: 120/1/10/25/120/on; flag inválida sai com código 2). Teclas: `p` pausa, `t` pausa de 1 min, `r` retoma, `q` sai; Ctrl+C encerra liberando a energia.
+- `tests/` — `*.Tests` por camada, `GapMouse.Architecture.Tests` (regras de dependência entre camadas) e `GapMouse.Testing` (biblioteca com dublês de teste compartilhados).
+
+## Design: núcleo funcional + host
+
+`KeepAwakeEngine` é puro: recebe `EngineInput` e devolve `EngineStep` (novo estado, eventos, `PowerRequest`). `EngineHost` o executa em **uma única thread dedicada**, faz as chamadas às portas e publica os eventos.
+
+**Regra de energia por thread:** `SetThreadExecutionState` vale por thread. Todas as chamadas de energia (pedir e liberar) devem ocorrer nessa mesma thread dedicada; nunca a partir de outra thread ou de continuações assíncronas.
+
+## Pontos não óbvios
+
+- Mover o cursor (`SetCursorPos` / `Cursor.Position`) **não** zera o contador de ociosidade do Windows (só input real ou `SendInput` zera). O motor depende disso: a ociosidade continua subindo durante o movimento sintético, e uso real é detectado quando ela cai abaixo do tempo decorrido desde o início do movimento (com tolerância de 0,5 s) ou fica < 1 s durante a espera.
+- O movimento sintético não evita suspensão; por isso o motor mantém um pedido de energia ativo (`PowerRequest`) enquanto roda.
+- Dívida técnica registrada: migrar para `SendInput` + hooks (ver ADR 0002).
+- O movimento se limita ao monitor principal.
+- O `.gitignore` padrão ignora pastas `Win32/`; há negações (`!src/**/Win32/`, `!tests/**/Win32/`). Ao criar pastas `Win32/` fora de `src/` e `tests/`, ou se arquivos "sumirem" do `git status`, verifique isso.
+
+## Build e testes
 
 ```
-legacy\MOUSE.bat
-# ou diretamente:
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File legacy/MOUSE.ps1 -tempoInatividadeSegundos 120 -intervaloChecagemSegundos 1 -intervaloMovMin 10 -intervaloMovMax 25
+dotnet build
+dotnet test                                              # tudo, incluindo testes Win32 reais
+dotnet test --filter-not-trait "Category=Win32"          # como no CI
+dotnet format --verify-no-changes
+dotnet run --project tools/GapMouse.DevConsole -- --idle 10 --min 3 --max 5
+dotnet publish tools/GapMouse.DevConsole -c Release -r win-x64 -o artifacts/devconsole
 ```
 
-Parar com Ctrl+C (o bloco `finally` restaura o controle de energia e espera um `Read-Host`).
+- O runner é Microsoft.Testing.Platform (`global.json`), então a sintaxe de filtro é `--filter-not-trait`, não o `--filter` do VSTest.
+- Testes que usam a API Win32 de verdade levam `[Trait("Category","Win32")]` e movem o cursor 1 px (não mexa no mouse por ~2 s). O CI os exclui.
+- CI (`.github/workflows/ci.yml`): `build-test` (format, build Release, testes com cobertura) e `aot-publish` (publica o DevConsole em Native AOT com avisos como erro e envia o artefato `devconsole-win-x64`). Há também CodeQL e Dependabot.
 
-Os valores padrão dos parâmetros no `.ps1` (25/90 s) diferem dos definidos no `.bat` (10/25 s); o `.bat` prevalece.
+## Convenções
 
-## Arquitetura (`legacy/MOUSE.ps1`)
-
-Máquina de estados em loop infinito alternando entre dois modos:
-
-- **Modo Parado** (`Start-ModoParado`): só observa. Retorna quando `Get-IdleSeconds` (via `GetLastInputInfo`) ≥ `tempoInatividadeSegundos`.
-- **Modo Movimento** (`Start-ModoMovimento`): chama `Move-MouseNaturally` (curva Bézier quadrática, 20–40 passos, velocidade variável) e espera um intervalo aleatório entre `intervaloMovMin`/`Max`, checando input a cada `intervaloChecagemSegundos`. Volta ao Modo Parado se detectar uso real.
-
-Pontos não óbvios:
-
-- Mover o cursor com `Cursor.Position` **não** zera o idle do Windows (só input real/`SendInput` zera). O script depende disso: o idle continua subindo durante o movimento sintético, então uso real é detectado quando o idle cai abaixo do tempo decorrido desde o início do movimento (`$idleAtual -lt $segundosDesdeInicio - 0.5`) ou `< 1` s durante a espera.
-- Como o movimento sintético não evita suspensão, `SetThreadExecutionState` (`Set-ImpedirSuspensao`, chamado repetidamente nos loops) impede suspensão e desligamento de tela; `Set-PermitirSuspensao` no `finally` desfaz isso.
-- Constantes `ES_*` são literais decimais com cast `[uint32]` porque em PS 5.1 `0x80000000` vira Int32 negativo e estoura na conversão — não trocar por hex.
-- O movimento se limita aos limites de `PrimaryScreen` (apenas monitor principal).
+- Código, nomes e commits em inglês; esta documentação em português.
+- Conventional Commits (`feat:`, `fix:`, `docs:`...). Sem trailers de atribuição de IA nos commits.
+- Versões de pacotes centralizadas em `Directory.Packages.props`.
+- Avisos tratados como erro (`Directory.Build.props`); `dotnet format` deve passar.
+- Código em `src/` deve ser compatível com Native AOT.
+- Dependências entre camadas: Domain não depende de nada; Application só de Domain; Infrastructure implementa as portas (verificado pelos testes de arquitetura).
