@@ -19,6 +19,12 @@ public class LayeringTests
             .GetResult().IsSuccessful.ShouldBeTrue();
 
     [Fact]
+    public void Application_DoesNotDependOnIoLibraries() =>
+        Types.InAssembly(ApplicationAssembly.Reference).ShouldNot()
+            .HaveDependencyOnAny("System.Net.Http", "System.Text.Json", "Microsoft.Win32")
+            .GetResult().IsSuccessful.ShouldBeTrue();
+
+    [Fact]
     public void Domain_DoesNotUseInterop() =>
         Types.InAssembly(DomainAssembly.Reference).ShouldNot()
             .HaveDependencyOnAny(
