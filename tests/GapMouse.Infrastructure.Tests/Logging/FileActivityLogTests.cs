@@ -78,6 +78,25 @@ public sealed class FileActivityLogTests : IDisposable
     }
 
     [Fact]
+    public void Retention_OneLockedOldFile_StillDeletesOtherOldFiles()
+    {
+        Directory.CreateDirectory(Logs);
+        var locked = Path.Combine(Logs, "gapmouse-2026-10-10.log");
+        var other = Path.Combine(Logs, "gapmouse-2026-10-12.log");
+        File.WriteAllText(locked, "x");
+        File.WriteAllText(other, "x");
+        var log = new FileActivityLog(Logs, _time);
+
+        using (new FileStream(locked, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            log.Configure(true, 7);
+        }
+
+        Assert.True(File.Exists(locked));
+        Assert.False(File.Exists(other));
+    }
+
+    [Fact]
     public void Retention_RunsAgainOnFirstAppendOfNewDay()
     {
         Directory.CreateDirectory(Logs);

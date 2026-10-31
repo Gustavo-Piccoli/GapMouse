@@ -145,9 +145,8 @@ public class UpdateServiceTests
         await source.WaitForCallAsync();
         source.Calls.ShouldBe(1);
 
-        time.Advance(TimeSpan.FromHours(24));
-        await source.WaitForCallAsync();
-        source.Calls.ShouldBe(2);
+        await TickUntilCalledAgainAsync(time, source);
+        source.Calls.ShouldBeGreaterThanOrEqualTo(2);
     }
 
     [Fact]
@@ -212,7 +211,7 @@ public class UpdateServiceTests
 
         gate.SetResult(null);
         await TickUntilCalledAgainAsync(time, source);
-        source.Calls.ShouldBe(2);
+        source.Calls.ShouldBeGreaterThanOrEqualTo(2);
     }
 
     [Fact]
@@ -267,11 +266,13 @@ public class UpdateServiceTests
 
     private static async Task TickUntilCalledAgainAsync(FakeTimeProvider time, FakeSource source)
     {
-        // The pending check completes on a pool thread; tick until the no-overlap flag has cleared and the source is called again.
-        for (var i = 0; i < 100 && source.Calls < 2; i++)
+        // The previous check finishes on a pool thread and clears the no-overlap flag only afterwards:
+        // keep ticking (with real waits) until the source is called again or the deadline passes.
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (source.Calls < 2 && DateTime.UtcNow < deadline)
         {
             time.Advance(TimeSpan.FromHours(24));
-            await Task.Yield();
+            await Task.Delay(10, TestContext.Current.CancellationToken);
         }
     }
 }

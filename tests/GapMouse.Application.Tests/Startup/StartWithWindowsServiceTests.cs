@@ -106,6 +106,24 @@ public class StartWithWindowsServiceTests
         _logger.Levels.ShouldContain(LogLevel.Warning);
     }
 
+    [Fact]
+    public void InitialPreference_NoSettingsFileAndRegistrarThrows_ReturnsFalseAndLogsWarning()
+    {
+        _registrar.ToThrow = new SecurityException();
+
+        CreateService().InitialPreference(settingsFileExisted: false, savedPreference: true).ShouldBeFalse();
+
+        _logger.Levels.ShouldContain(LogLevel.Warning);
+    }
+
+    [Fact]
+    public void InitialPreference_SettingsFileExistsAndRegistrarThrows_ReturnsSavedValueWithoutReadingRegistry()
+    {
+        _registrar.ToThrow = new SecurityException();
+
+        CreateService().InitialPreference(settingsFileExisted: true, savedPreference: true).ShouldBeTrue();
+    }
+
     private StartWithWindowsService CreateService() => new(_registrar, Exe, _logger);
 
     private sealed class FakeRegistrar : IStartupRegistrar

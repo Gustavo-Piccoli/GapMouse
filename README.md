@@ -41,8 +41,8 @@ Flags: `--idle <s>`, `--check <s>`, `--min <s>`, `--max <s>`, `--amplitude <px>`
 Clean Architecture with a functional core:
 
 - `GapMouse.Domain` — pure logic: the `KeepAwakeEngine` state machine, movement planning, settings validation. No I/O.
-- `GapMouse.Application` — ports (cursor, idle time, monitor bounds, power requests) and `EngineHost`, which runs the engine on a dedicated thread.
-- `GapMouse.Infrastructure` — Win32 adapters for those ports.
+- `GapMouse.Application` — ports and `EngineHost`, which runs the engine on a dedicated thread. Engine ports: cursor, idle time, monitor bounds, power requests. Persistence and system ports: settings store, app state store, activity log, startup registrar (start with Windows), release source (update check).
+- `GapMouse.Infrastructure` — Win32 adapters for the engine ports, plus file, registry and GitHub implementations of the persistence and system ports.
 
 Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/). The original PowerShell script lives in [`legacy/`](legacy/).
 
@@ -59,7 +59,7 @@ Portable mode is on when a file named `portable` (no extension) or `GapMouse.set
 
 - `GapMouse.settings.json`: your settings.
 - `GapMouse.state.json`: today's counters (moving time and activations).
-- `gapmouse-yyyy-MM-dd.log`: one activity log per day, kept for 7 days by default (configurable, 1 to 365).
+- `gapmouse-yyyy-MM-dd.log`: one activity log per day, kept for 7 days by default (configurable, 1 to 365). With N days, a file is deleted when the date in its name is earlier than today minus N, so N = 7 keeps today plus the 7 previous days.
 
 The only network call is the optional update check: a `GET` to `https://api.github.com/repos/Gustavo-Piccoli/GapMouse/releases/latest` at start and then every 24 hours. It never downloads or installs anything. Turn it off by setting `"checkForUpdates": false` in the `system` section of the settings file (a settings screen arrives with the desktop app).
 

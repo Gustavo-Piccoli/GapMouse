@@ -102,6 +102,21 @@ public sealed class AppStatePersisterTests
         Assert.Equal(2, f.Logger.Levels.Count(l => l == LogLevel.Warning));
     }
 
+    [Fact]
+    public void TimerSave_StoreThrowsNonIoException_DoesNotThrowAndLogsOneWarning()
+    {
+        var f = new Fixture();
+        f.Engine.Snapshot = f.Engine.Snapshot with { State = EngineState.Moving };
+        f.Persister.Start();
+        f.Store.Failures.Enqueue(new ArgumentException("bad path"));
+        f.Store.Failures.Enqueue(new NotSupportedException("nope"));
+
+        var ex = Record.Exception(() => f.Time.Advance(TimeSpan.FromSeconds(120)));
+
+        Assert.Null(ex);
+        Assert.Single(f.Logger.Levels, LogLevel.Warning);
+    }
+
     private sealed class RecordingStore : IAppStateStore
     {
         public List<AppState> Saved { get; } = [];

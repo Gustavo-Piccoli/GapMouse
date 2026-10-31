@@ -43,6 +43,8 @@ Estado atual: Plano 2 (persistência de configurações e estado, logs em arquiv
 - `GapMouse.Application` não faz I/O nem referencia `System.Text.Json`, `System.Net.Http` ou `Microsoft.Win32` (garantido por teste de arquitetura); todo acesso a arquivo, rede e registro fica na Infrastructure.
 - As flags do DevConsole sobrepõem as configurações salvas apenas naquela execução e **não** são gravadas.
 - O DevConsole nunca grava a chave Run do registro (`StartWithWindowsService` não é ligado nele).
+- Retenção de logs: um arquivo é apagado quando a data no nome é anterior a hoje − N; com N = 7 ficam hoje e os 7 dias anteriores.
+- Para quem compuser o app (Plano 3): descarte na ordem host → `AppStatePersister` → `ActivityLogWriter` → `UpdateService` → `HttpClient` (o persister lê o snapshot, publicado depois que os eventos são disparados). Não salve as configurações após um carregamento que não conseguiu ler o arquivo (`FileExisted=true` com aviso de leitura), senão os padrões sobrescrevem o arquivo do usuário. `UpdateFound` e `EventRaised` disparam fora da thread de UI.
 - O `.gitignore` padrão ignora pastas `Win32/`; há negações (`!src/**/Win32/`, `!tests/**/Win32/`). Ao criar pastas `Win32/` fora de `src/` e `tests/`, ou se arquivos "sumirem" do `git status`, verifique isso.
 
 ## Build e testes

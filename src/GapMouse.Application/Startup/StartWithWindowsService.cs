@@ -8,8 +8,23 @@ public sealed partial class StartWithWindowsService(
     string exePath,
     ILogger<StartWithWindowsService> logger)
 {
-    public bool InitialPreference(bool settingsFileExisted, bool savedPreference) =>
-        settingsFileExisted ? savedPreference : registrar.GetCommand() is not null;
+    public bool InitialPreference(bool settingsFileExisted, bool savedPreference)
+    {
+        if (settingsFileExisted)
+        {
+            return savedPreference;
+        }
+
+        try
+        {
+            return registrar.GetCommand() is not null;
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or SecurityException)
+        {
+            LogReadFailed(ex);
+            return false;
+        }
+    }
 
     public bool Apply(bool enabled)
     {
@@ -37,6 +52,9 @@ public sealed partial class StartWithWindowsService(
             return false;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Could not read the start with Windows registration")]
+    private partial void LogReadFailed(Exception exception);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Could not apply start with Windows (enabled: {Enabled})")]
     private partial void LogApplyFailed(Exception exception, bool enabled);
