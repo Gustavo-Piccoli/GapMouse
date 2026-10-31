@@ -4,6 +4,9 @@
     <Project Path="src/GapMouse.Domain/GapMouse.Domain.csproj" />
     <Project Path="src/GapMouse.Infrastructure/GapMouse.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/GapMouse.DevConsole/GapMouse.DevConsole.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GapMouse.Application.Tests/GapMouse.Application.Tests.csproj" />
     <Project Path="tests/GapMouse.Architecture.Tests/GapMouse.Architecture.Tests.csproj" />
