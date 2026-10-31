@@ -123,7 +123,7 @@ public class KeepAwakeEngineMovementTests
         var today = e.GetSnapshot().Today;
         today.Day.ShouldBe(new DateOnly(2026, 11, 3));
         today.MovingActivations.ShouldBe(0);
-        today.MovingTime.ShouldBeLessThan(60.S());
+        today.MovingTime.ShouldBe(40.S());
     }
 
     [Fact]

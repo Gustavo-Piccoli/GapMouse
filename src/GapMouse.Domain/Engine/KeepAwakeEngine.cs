@@ -22,6 +22,10 @@ public sealed class KeepAwakeEngine
     private DateTimeOffset _movementStartedAt;
     private DateTimeOffset _waitEndsAt;
 
+    private DateTimeOffset? _pauseEndsAt;
+    private DateTimeOffset? _lastPausedAt;
+    private DateTimeOffset? _lastResumedAt;
+
     private DateTimeOffset? _lastAdvanceAt;
     private bool _lastAdvanceWasMoving;
     private TimeSpan _lastIdle;
@@ -59,6 +63,11 @@ public sealed class KeepAwakeEngine
 
     public EngineStep Advance(EngineInput input)
     {
+        if (IsStopped)
+        {
+            return new EngineStep(null, PowerRequest.None, Settings.CheckInterval);
+        }
+
         var now = input.Now;
         var day = DateOnly.FromDateTime(now.Date);
         if (day != _today.Day)
@@ -76,7 +85,12 @@ public sealed class KeepAwakeEngine
         }
 
         _lastIdle = input.Idle;
-        var step = State == EngineState.Moving ? AdvanceMoving(input) : AdvanceWaiting(input);
+        var step = State switch
+        {
+            EngineState.Paused => AdvancePaused(input),
+            EngineState.Moving => AdvanceMoving(input),
+            _ => AdvanceWaiting(input),
+        };
         _lastAdvanceAt = now;
         _lastAdvanceWasMoving = State == EngineState.Moving;
         return step;
@@ -96,20 +110,76 @@ public sealed class KeepAwakeEngine
         Settings.IdleThreshold,
         _lastMovingStartedAt,
         _lastUserReturnedAt,
-        null,
-        null,
-        null,
+        _lastPausedAt,
+        _lastResumedAt,
+        _pauseEndsAt,
         _today);
 
-    public void Pause(PauseDuration duration, DateTimeOffset now) => throw new NotImplementedException();
+    public void Pause(PauseDuration duration, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(duration);
+        State = EngineState.Paused;
+        _path = null;
+        _pauseEndsAt = duration.Length is { } length ? now + length : null;
+        _lastPausedAt = now;
+        _events.Add(new EnginePaused(now, duration, _pauseEndsAt));
+    }
 
-    public bool Resume(DateTimeOffset now) => throw new NotImplementedException();
+    public bool Resume(DateTimeOffset now)
+    {
+        if (State != EngineState.Paused)
+        {
+            return false;
+        }
 
-    public void ApplySettings(EngineSettings settings, DateTimeOffset now) => throw new NotImplementedException();
+        EnterWaitingFromPause(now, ResumeReason.Manual);
+        return true;
+    }
 
-    public void Stop(DateTimeOffset now) => throw new NotImplementedException();
+    public void ApplySettings(EngineSettings settings, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        Settings = settings;
+        _events.Add(new SettingsChanged(now, settings));
+    }
+
+    public void Stop(DateTimeOffset now)
+    {
+        if (IsStopped)
+        {
+            return;
+        }
+
+        IsStopped = true;
+        _events.Add(new EngineStopped(now));
+    }
 
     private static TimeSpan Min(TimeSpan a, TimeSpan b) => a < b ? a : b;
+
+    private void EnterWaitingFromPause(DateTimeOffset now, ResumeReason reason)
+    {
+        State = EngineState.Waiting;
+        _pauseEndsAt = null;
+        _lastResumedAt = now;
+        _events.Add(new EngineResumed(now, reason));
+        _events.Add(new WaitingStarted(now, Settings.IdleThreshold));
+    }
+
+    private EngineStep AdvancePaused(EngineInput input)
+    {
+        if (_pauseEndsAt is not { } endsAt)
+        {
+            return new EngineStep(null, PowerRequest.None, Settings.CheckInterval);
+        }
+
+        if (endsAt <= input.Now)
+        {
+            EnterWaitingFromPause(input.Now, ResumeReason.PauseExpired);
+            return AdvanceWaiting(input);
+        }
+
+        return new EngineStep(null, PowerRequest.None, Min(Settings.CheckInterval, endsAt - input.Now));
+    }
 
     private EngineStep AdvanceWaiting(EngineInput input)
     {
