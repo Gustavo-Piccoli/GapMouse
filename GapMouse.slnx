@@ -8,5 +8,6 @@
     <Project Path="tests/GapMouse.Application.Tests/GapMouse.Application.Tests.csproj" />
     <Project Path="tests/GapMouse.Architecture.Tests/GapMouse.Architecture.Tests.csproj" />
     <Project Path="tests/GapMouse.Domain.Tests/GapMouse.Domain.Tests.csproj" />
+    <Project Path="tests/GapMouse.Testing/GapMouse.Testing.csproj" />
   </Folder>
 </Solution>
