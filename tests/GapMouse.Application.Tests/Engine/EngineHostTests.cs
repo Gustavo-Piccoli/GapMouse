@@ -124,6 +124,102 @@ public sealed class EngineHostTests : IDisposable
         Should.Throw<InvalidOperationException>(() => _host.Start());
     }
 
+    [Theory]
+    [InlineData(0, 10)]
+    [InlineData(-1, 10)]
+    [InlineData(-50, 10)]
+    [InlineData(10, 10)]
+    [InlineData(1000, 1000)]
+    public void ClampWait_OutOfRangeOrInRange_ReturnsValueWithinBounds(int inputMs, int expectedMs) =>
+        EngineHost.ClampWait(TimeSpan.FromMilliseconds(inputMs)).ShouldBe(TimeSpan.FromMilliseconds(expectedMs));
+
+    [Fact]
+    public void ClampWait_InfiniteOrHuge_IsCappedAtMaxIntMilliseconds()
+    {
+        EngineHost.ClampWait(Timeout_Infinite).ShouldBe(TimeSpan.FromMilliseconds(10));
+        EngineHost.ClampWait(TimeSpan.MaxValue).ShouldBe(TimeSpan.FromMilliseconds(int.MaxValue));
+    }
+
+    [Fact]
+    public void QueuedCommandThrows_LoopKeepsRunningAndLogsError()
+    {
+        _host.Start();
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.KeepSystemAndDisplayAwake, Timeout).ShouldBeTrue();
+
+        _host.Enqueue((_, _) => throw new InvalidOperationException("command boom"));
+        _host.ApplySettings(EngineSettings.Create(120, 60, 10, 25, 120, keepDisplayOn: false).Value);
+
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.KeepSystemAwake, Timeout).ShouldBeTrue();
+        _logger.Levels.Count(l => l == LogLevel.Error).ShouldBe(1);
+    }
+
+    [Fact]
+    public void SubscriberThrows_LoopKeepsRunningAndSnapshotUpdates()
+    {
+        _host.EventRaised += (_, _) => throw new InvalidOperationException("subscriber boom");
+        _host.Start();
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.KeepSystemAndDisplayAwake, Timeout).ShouldBeTrue();
+
+        _host.Pause(PauseDuration.Indefinite);
+
+        SpinWait.SpinUntil(() => _host.Snapshot.State == EngineState.Paused, Timeout).ShouldBeTrue();
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.None, Timeout).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Commands_AfterDispose_DoNotThrow()
+    {
+        _host.Start();
+        SpinWait.SpinUntil(() => _power.Calls.Count > 0, Timeout).ShouldBeTrue();
+        _host.Dispose();
+
+        Should.NotThrow(() =>
+        {
+            _host.Pause(PauseDuration.Indefinite);
+            _host.Resume();
+            _host.ApplySettings(EngineSettings.Default);
+        });
+    }
+
+    [Fact]
+    public void Dispose_CalledFromEngineThread_DoesNotDeadlockAndReleasesPower()
+    {
+        _host.EventRaised += (_, e) =>
+        {
+            if (e.Event is EngineStarted)
+            {
+                _host.Dispose();
+            }
+        };
+
+        _host.Start();
+
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.None, Timeout).ShouldBeTrue();
+        _power.Calls.Select(c => c.ThreadId).Distinct().Count().ShouldBe(1);
+    }
+
+    [Fact]
+    public void IdleReadThrows_SkipsAdvanceLogsOnceAndLogsRecovery()
+    {
+        _idle.ThrowOnRead = true;
+        _host.Start();
+        SpinWait.SpinUntil(() => _logger.Levels.Contains(LogLevel.Warning), Timeout).ShouldBeTrue();
+
+        Thread.Sleep(300);
+
+        _power.Calls.ShouldBeEmpty();
+        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
+
+        _idle.ThrowOnRead = false;
+        _host.ApplySettings(EngineSettings.Default);
+
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.KeepSystemAndDisplayAwake, Timeout).ShouldBeTrue();
+        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(1);
+        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
+    }
+
+    private static readonly TimeSpan Timeout_Infinite = System.Threading.Timeout.InfiniteTimeSpan;
+
     private EngineEvent[] EventsSnapshot()
     {
         lock (_eventsGate)

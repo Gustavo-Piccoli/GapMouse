@@ -12,5 +12,7 @@ internal sealed class FakeIdle : IIdleTimeProvider
         set => Interlocked.Exchange(ref _idleTicks, value.Ticks);
     }
 
-    public TimeSpan GetIdleTime() => Idle;
+    public bool ThrowOnRead { get; set; }
+
+    public TimeSpan GetIdleTime() => ThrowOnRead ? throw new InvalidOperationException("idle boom") : Idle;
 }

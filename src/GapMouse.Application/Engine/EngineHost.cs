@@ -16,6 +16,8 @@ namespace GapMouse.Application.Engine;
 /// </summary>
 public sealed partial class EngineHost : IEngineController, IDisposable
 {
+    private static readonly TimeSpan MinimumWait = TimeSpan.FromMilliseconds(10);
+    private static readonly TimeSpan MaximumWait = TimeSpan.FromMilliseconds(int.MaxValue);
     private static readonly TimeSpan JoinTimeout = TimeSpan.FromSeconds(5);
 
     private readonly EngineSettings _initialSettings;
@@ -78,6 +80,7 @@ public sealed partial class EngineHost : IEngineController, IDisposable
         Monitor,
         SetCursor,
         Power,
+        Loop,
     }
 
     public event EventHandler<EngineEventArgs>? EventRaised;
@@ -120,13 +123,21 @@ public sealed partial class EngineHost : IEngineController, IDisposable
 
         _stopRequested = true;
         _wake.Set();
-        if (Volatile.Read(ref _started) == 0 || _thread.Join(JoinTimeout))
+        if (Volatile.Read(ref _started) == 0)
+        {
+            _wake.Dispose();
+        }
+        else if (Environment.CurrentManagedThreadId != _thread.ManagedThreadId && _thread.Join(JoinTimeout))
         {
             _wake.Dispose();
         }
     }
 
-    private void Enqueue(Action<KeepAwakeEngine, DateTimeOffset> command)
+    /// <summary>Clamps a requested wait so the loop can neither spin nor block forever.</summary>
+    internal static TimeSpan ClampWait(TimeSpan wait) =>
+        wait < MinimumWait ? MinimumWait : wait > MaximumWait ? MaximumWait : wait;
+
+    internal void Enqueue(Action<KeepAwakeEngine, DateTimeOffset> command)
     {
         if (_stopRequested)
         {
@@ -134,7 +145,14 @@ public sealed partial class EngineHost : IEngineController, IDisposable
         }
 
         _commands.Enqueue(command);
-        _wake.Set();
+        try
+        {
+            _wake.Set();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Raced with Dispose: the host is gone, so the command is moot.
+        }
     }
 
     private void Run()
@@ -146,18 +164,39 @@ public sealed partial class EngineHost : IEngineController, IDisposable
             PowerRequest? applied = null;
             while (!_stopRequested)
             {
-                var wait = Iterate(engine, ref applied);
+                var wait = SafeIterate(engine, ref applied);
                 if (_stopRequested)
                 {
                     break;
                 }
 
-                _wake.WaitOne(wait);
+                _wake.WaitOne(ClampWait(wait));
             }
         }
         finally
         {
             Shutdown(engine);
+        }
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "An unexpected failure in one iteration must not terminate the process.")]
+    private TimeSpan SafeIterate(KeepAwakeEngine engine, ref PowerRequest? applied)
+    {
+        try
+        {
+            var wait = Iterate(engine, ref applied);
+            _failing[(int)Port.Loop] = false;
+            return wait;
+        }
+        catch (Exception ex)
+        {
+            if (!_failing[(int)Port.Loop])
+            {
+                _failing[(int)Port.Loop] = true;
+                LogLoopFailed(ex);
+            }
+
+            return engine.Settings.CheckInterval;
         }
     }
 
@@ -314,6 +353,9 @@ public sealed partial class EngineHost : IEngineController, IDisposable
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Port {Port} recovered")]
     private partial void LogPortRecovered(Port port);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "An engine loop iteration failed; continuing")]
+    private partial void LogLoopFailed(Exception exception);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "An engine event subscriber or shutdown step threw")]
     private partial void LogSubscriberFailed(Exception exception);
