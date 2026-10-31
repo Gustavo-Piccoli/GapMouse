@@ -161,4 +161,36 @@ public class JsonSettingsStoreTests
         result.Settings.Theme.ShouldBe(AppTheme.Light);
         result.Warnings.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void Load_FileLocked_ReturnsDefaultsWithWarningAndKeepsFile()
+    {
+        using var dir = new TempDirectory();
+        var path = Path.Combine(dir.Path, FileName);
+        File.WriteAllText(path, """{ "appearance": { "theme": "Light" } }""");
+        using var held = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+
+        var result = new JsonSettingsStore(path).Load();
+
+        result.Settings.ShouldBe(AppSettings.Default);
+        result.FileExisted.ShouldBeTrue();
+        result.Warnings.Count.ShouldBe(1);
+        File.Exists(path + ".bad").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Load_CorruptFileCannotBeMoved_ReturnsDefaultsWithWarning()
+    {
+        using var dir = new TempDirectory();
+        var path = Path.Combine(dir.Path, FileName);
+        File.WriteAllText(path, "{ not json");
+        using var held = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        var result = new JsonSettingsStore(path).Load();
+
+        result.Settings.ShouldBe(AppSettings.Default);
+        result.Warnings.Count.ShouldBe(1);
+        result.Warnings[0].ShouldNotContain("copy was kept");
+        File.Exists(path + ".bad").ShouldBeFalse();
+    }
 }

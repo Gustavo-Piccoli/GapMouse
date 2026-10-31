@@ -40,7 +40,7 @@ public sealed class JsonAppStateStore(string stateFilePath) : IAppStateStore
                 TimeSpan.FromSeconds(today.MovingSeconds.Value),
                 today.MovingActivations.Value));
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
             return null;
         }
