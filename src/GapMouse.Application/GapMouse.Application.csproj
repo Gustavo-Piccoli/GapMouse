@@ -13,4 +13,8 @@
     <ProjectReference Include="..\GapMouse.Domain\GapMouse.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="GapMouse.Application.Tests" />
+  </ItemGroup>
+
 </Project>
