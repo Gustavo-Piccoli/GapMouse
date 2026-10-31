@@ -6,20 +6,26 @@ Este arquivo orienta o Claude Code (claude.ai/code) ao trabalhar neste repositó
 
 GapMouse é um utilitário .NET 10 para Windows que mantém o PC ativo (evita bloqueio de tela e suspensão) movendo o mouse quando o usuário está ocioso. É a reescrita do script PowerShell original, que continua em `legacy/` (`MOUSE.ps1`, `MOUSE.bat`) apenas como referência.
 
-Estado atual: Plano 1 (fundação + motor headless + console de desenvolvimento). Roadmap: Plano 2 persistência e integração com o sistema; Plano 3 app desktop Avalonia (bandeja, abas, temas, i18n); Plano 4 distribuição (instalador, portátil, winget).
+Estado atual: Plano 2 (persistência de configurações e estado, logs em arquivo, início com o Windows, verificação de atualização; o app ainda é só o console de desenvolvimento). Roadmap: Plano 3 app desktop Avalonia (bandeja, abas, temas, i18n); Plano 4 distribuição (instalador, portátil, winget).
 
 ## Documentação
 
 - Spec: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`
 - Planos: `docs/superpowers/plans/`
-- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada)
+- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco)
 
 ## Projetos e responsabilidades
 
 - `src/GapMouse.Domain` — núcleo puro e síncrono: `KeepAwakeEngine` (máquina de estados), planejamento de trajetória (`MovementPathPlanner`), `EngineSettings` e validação. Sem I/O.
-- `src/GapMouse.Application` — portas em `Abstractions/` (cursor, ociosidade, limites de monitor, power requests) e `EngineHost`, que executa o motor.
-- `src/GapMouse.Infrastructure` — adaptadores Win32 em `Win32/` e fonte de aleatoriedade.
-- `tools/GapMouse.DevConsole` — console Native AOT só para desenvolvedores (não é distribuído). Flags: `--idle`, `--check`, `--min`, `--max`, `--amplitude`, `--display on|off` (padrões de `EngineSettings.Default`: 120/1/10/25/120/on; flag inválida sai com código 2). Teclas: `p` pausa, `t` pausa de 1 min, `r` retoma, `q` sai; Ctrl+C encerra liberando a energia.
+- `src/GapMouse.Application` — portas em `Abstractions/` (cursor, ociosidade, limites de monitor, power requests) e `EngineHost`, que executa o motor. Pastas do Plano 2 (sem I/O, só portas e lógica):
+  - `Settings/` — `AppSettings` e `ISettingsStore`;
+  - `State/` — `AppState`, `IAppStateStore` e `AppStatePersister`;
+  - `Paths/` — `AppPaths` (portátil vs. instalado);
+  - `Logging/` — `IActivityLog`, `LogEntry`, `LogEntryFormatter`, `ActivityLogger<T>`, `ActivityLogWriter`;
+  - `Startup/` — `IStartupRegistrar` e `StartWithWindowsService`;
+  - `Updates/` — `IReleaseSource` e `UpdateService`.
+- `src/GapMouse.Infrastructure` — adaptadores Win32 em `Win32/`, fonte de aleatoriedade e implementações das portas do Plano 2: `Settings/` e `State/` (JSON com geração de código), `Logging/` (`FileActivityLog`), `Startup/` (chave Run do registro) e `Updates/` (`GitHubReleaseSource`).
+- `tools/GapMouse.DevConsole` — console Native AOT só para desenvolvedores (não é distribuído). Guarda configurações, estado (`GapMouse.state.json`) e logs (`logs/`) ao lado do próprio exe (modo portátil fixo), nunca no perfil do usuário. Flags: `--idle`, `--check`, `--min`, `--max`, `--amplitude`, `--display on|off` (padrões de `EngineSettings.Default`: 120/1/10/25/120/on; flag inválida sai com código 2). Teclas: `p` pausa, `t` pausa de 1 min, `r` retoma, `q` sai; Ctrl+C encerra liberando a energia.
 - `tests/` — `*.Tests` por camada, `GapMouse.Architecture.Tests` (regras de dependência entre camadas) e `GapMouse.Testing` (biblioteca com dublês de teste compartilhados).
 
 ## Design: núcleo funcional + host
@@ -34,6 +40,9 @@ Estado atual: Plano 1 (fundação + motor headless + console de desenvolvimento)
 - O movimento sintético não evita suspensão; por isso o motor mantém um pedido de energia ativo (`PowerRequest`) enquanto roda.
 - Dívida técnica registrada: migrar para `SendInput` + hooks (ver ADR 0002).
 - O movimento se limita ao monitor principal.
+- `GapMouse.Application` não faz I/O nem referencia `System.Text.Json`, `System.Net.Http` ou `Microsoft.Win32` (garantido por teste de arquitetura); todo acesso a arquivo, rede e registro fica na Infrastructure.
+- As flags do DevConsole sobrepõem as configurações salvas apenas naquela execução e **não** são gravadas.
+- O DevConsole nunca grava a chave Run do registro (`StartWithWindowsService` não é ligado nele).
 - O `.gitignore` padrão ignora pastas `Win32/`; há negações (`!src/**/Win32/`, `!tests/**/Win32/`). Ao criar pastas `Win32/` fora de `src/` e `tests/`, ou se arquivos "sumirem" do `git status`, verifique isso.
 
 ## Build e testes

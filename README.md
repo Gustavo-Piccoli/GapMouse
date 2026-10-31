@@ -46,10 +46,29 @@ Clean Architecture with a functional core:
 
 Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/). The original PowerShell script lives in [`legacy/`](legacy/).
 
+## Your data
+
+GapMouse stores everything locally and needs no admin rights.
+
+| Mode | Settings and state | Logs |
+|---|---|---|
+| Installed | `%AppData%\GapMouse` | `%LocalAppData%\GapMouse\logs` |
+| Portable | next to the exe | `logs\` next to the exe |
+
+Portable mode is on when a file named `portable` (no extension) or `GapMouse.settings.json` exists next to the exe.
+
+- `GapMouse.settings.json`: your settings.
+- `GapMouse.state.json`: today's counters (moving time and activations).
+- `gapmouse-yyyy-MM-dd.log`: one activity log per day, kept for 7 days by default (configurable, 1 to 365).
+
+The only network call is the optional update check: a `GET` to `https://api.github.com/repos/Gustavo-Piccoli/GapMouse/releases/latest` at start and then every 24 hours. It never downloads or installs anything. Turn it off by setting `"checkForUpdates": false` in the `system` section of the settings file (a settings screen arrives with the desktop app).
+
+The developer console always keeps its data next to its own exe.
+
 ## Roadmap
 
-1. Foundation and headless engine (current).
-2. Persistence and system integration.
+1. Foundation and headless engine.
+2. Persistence and system integration (current).
 3. Avalonia desktop app: tray, tabs, themes, i18n.
 4. Distribution: installer, portable build, winget.
 

@@ -6,14 +6,15 @@ namespace GapMouse.DevConsole;
 internal static class ConsoleOptions
 {
     /// <summary>
-    /// Parses the command line over <see cref="EngineSettings.Default"/>. Malformed or unknown arguments are reported in
+    /// Parses the command line over <paramref name="baseline"/>. Malformed or unknown arguments are reported in
     /// <paramref name="usageErrors"/>; range errors come back through the validation result.
     /// </summary>
-    public static ValidationResult<EngineSettings> Parse(string[] args, out IReadOnlyList<string> usageErrors)
+    public static ValidationResult<EngineSettings> Parse(string[] args, EngineSettings baseline, out IReadOnlyList<string> usageErrors)
     {
         ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(baseline);
 
-        EngineSettings d = EngineSettings.Default;
+        EngineSettings d = baseline;
         int idle = (int)d.IdleThreshold.TotalSeconds;
         int check = (int)d.CheckInterval.TotalSeconds;
         int min = (int)d.MovementIntervalMin.TotalSeconds;
