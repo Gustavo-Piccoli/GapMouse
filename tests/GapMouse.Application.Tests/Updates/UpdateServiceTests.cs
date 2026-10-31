@@ -11,17 +11,24 @@ public class UpdateServiceTests
     private static readonly Version Current = new(1, 0, 0);
     private static readonly Uri PageUrl = new("https://github.com/Gustavo-Piccoli/GapMouse/releases/tag/v1.1.0");
 
-    private sealed class FakeSource(Func<CancellationToken, Task<ReleaseInfo?>> handler) : IReleaseSource
+    private sealed class FakeSource(Func<CancellationToken, Task<ReleaseInfo?>> handler) : IReleaseSource, IDisposable
     {
+        private readonly SemaphoreSlim _signal = new(0);
         private int _calls;
+
+        public void Dispose() => _signal.Dispose();
 
         public int Calls => Volatile.Read(ref _calls);
 
         public Task<ReleaseInfo?> GetLatestAsync(CancellationToken cancellationToken)
         {
             Interlocked.Increment(ref _calls);
+            _signal.Release();
             return handler(cancellationToken);
         }
+
+        public async Task WaitForCallAsync() =>
+            (await _signal.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken)).ShouldBeTrue("source was not called");
     }
 
     private static FakeSource Returning(string? tag) =>
@@ -135,15 +142,16 @@ public class UpdateServiceTests
         using var sut = Create(source, time);
 
         sut.Start(() => true);
-        await WaitForCallsAsync(source, 1);
+        await source.WaitForCallAsync();
+        source.Calls.ShouldBe(1);
 
         time.Advance(TimeSpan.FromHours(24));
-        await WaitForCallsAsync(source, 2);
+        await source.WaitForCallAsync();
         source.Calls.ShouldBe(2);
     }
 
     [Fact]
-    public async Task Start_Disabled_NeverCallsSource()
+    public void Start_Disabled_NeverCallsSource()
     {
         var time = new FakeTimeProvider();
         var source = Returning("v1.1.0");
@@ -151,7 +159,6 @@ public class UpdateServiceTests
 
         sut.Start(() => false);
         time.Advance(TimeSpan.FromHours(48));
-        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         source.Calls.ShouldBe(0);
     }
@@ -165,12 +172,65 @@ public class UpdateServiceTests
         using var sut = Create(source, time);
 
         sut.Start(() => Volatile.Read(ref enabled));
-        await Task.Delay(100, TestContext.Current.CancellationToken);
         source.Calls.ShouldBe(0);
 
         Volatile.Write(ref enabled, true);
         time.Advance(TimeSpan.FromHours(24));
-        await WaitForCallsAsync(source, 1);
+        await source.WaitForCallAsync();
+        source.Calls.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Start_IsEnabledThrows_SkipsTickWithoutThrowing()
+    {
+        var time = new FakeTimeProvider();
+        var source = Returning("v1.1.0");
+        var logger = new ListLogger<UpdateService>();
+        using var sut = Create(source, time, logger);
+
+        sut.Start(() => throw new InvalidOperationException("settings unreadable"));
+        Should.NotThrow(() => time.Advance(TimeSpan.FromHours(48)));
+
+        source.Calls.ShouldBe(0);
+        logger.Levels.ShouldNotBeEmpty();
+        logger.Levels.ShouldAllBe(l => l < LogLevel.Warning);
+    }
+
+    [Fact]
+    public async Task Start_CheckStillRunning_SkipsOverlappingTicks()
+    {
+        var time = new FakeTimeProvider();
+        var gate = new TaskCompletionSource<ReleaseInfo?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var source = new FakeSource(_ => gate.Task);
+        using var sut = Create(source, time);
+
+        sut.Start(() => true);
+        await source.WaitForCallAsync();
+        time.Advance(TimeSpan.FromHours(24));
+        time.Advance(TimeSpan.FromHours(24));
+        source.Calls.ShouldBe(1);
+
+        gate.SetResult(null);
+        await TickUntilCalledAgainAsync(time, source);
+        source.Calls.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Start_CalledTwice_Throws()
+    {
+        using var sut = Create(Returning("v1.0.0"), new FakeTimeProvider());
+        sut.Start(() => false);
+
+        Should.Throw<InvalidOperationException>(() => sut.Start(() => false));
+    }
+
+    [Fact]
+    public void Start_AfterDispose_Throws()
+    {
+        var sut = Create(Returning("v1.0.0"), new FakeTimeProvider());
+        sut.Dispose();
+
+        Should.Throw<ObjectDisposedException>(() => sut.Start(() => false));
     }
 
     [Fact]
@@ -205,14 +265,13 @@ public class UpdateServiceTests
         }
     }
 
-    private static async Task WaitForCallsAsync(FakeSource source, int expected)
+    private static async Task TickUntilCalledAgainAsync(FakeTimeProvider time, FakeSource source)
     {
-        var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (source.Calls < expected && DateTime.UtcNow < deadline)
+        // The pending check completes on a pool thread; tick until the no-overlap flag has cleared and the source is called again.
+        for (var i = 0; i < 100 && source.Calls < 2; i++)
         {
-            await Task.Delay(10, TestContext.Current.CancellationToken);
+            time.Advance(TimeSpan.FromHours(24));
+            await Task.Yield();
         }
-
-        source.Calls.ShouldBeGreaterThanOrEqualTo(expected);
     }
 }
