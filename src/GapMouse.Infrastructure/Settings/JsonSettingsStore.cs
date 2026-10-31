@@ -28,6 +28,13 @@ public sealed class JsonSettingsStore(string settingsFilePath) : ISettingsStore
         {
             return Corrupt();
         }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return new SettingsLoadResult(
+                AppSettings.Default,
+                true,
+                [$"Settings: file could not be read ({ex.Message}); using defaults."]);
+        }
 
         if (document is null)
         {
@@ -178,7 +185,18 @@ public sealed class JsonSettingsStore(string settingsFilePath) : ISettingsStore
     private SettingsLoadResult Corrupt()
     {
         var bad = settingsFilePath + ".bad";
-        File.Move(settingsFilePath, bad, overwrite: true);
+        try
+        {
+            File.Move(settingsFilePath, bad, overwrite: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return new SettingsLoadResult(
+                AppSettings.Default,
+                true,
+                ["Settings: file is not valid JSON and could not be moved aside; using defaults."]);
+        }
+
         return new SettingsLoadResult(
             AppSettings.Default,
             true,

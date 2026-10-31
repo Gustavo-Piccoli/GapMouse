@@ -38,4 +38,15 @@ public class JsonAppStateStoreTests
 
         File.Exists(path + ".bad").ShouldBeFalse();
     }
+
+    [Fact]
+    public void Load_FileLocked_ReturnsNull()
+    {
+        using var dir = new TempDirectory();
+        var path = Path.Combine(dir.Path, "GapMouse.state.json");
+        File.WriteAllText(path, "{}");
+        using var held = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+
+        new JsonAppStateStore(path).Load().ShouldBeNull();
+    }
 }
