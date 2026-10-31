@@ -213,20 +213,30 @@ public sealed partial class EngineHost : IEngineController, IDisposable
             var step = engine.Advance(input);
             wait = step.WaitBeforeNext;
 
-            if (applied != step.Power && TryPort(Port.Power, () => _power.Apply(step.Power)))
-            {
-                applied = step.Power;
-            }
+            ApplyPower(step.Power, ref applied);
 
             if (step.MoveCursorTo is { } target)
             {
                 MoveCursor(target);
             }
         }
+        else if (engine.State == EngineState.Paused || engine.IsStopped)
+        {
+            // Without readable input there is no step, but a pause must still release the power request.
+            ApplyPower(PowerRequest.None, ref applied);
+        }
 
         RaiseEvents(engine);
         Volatile.Write(ref _snapshot, engine.GetSnapshot());
         return wait;
+    }
+
+    private void ApplyPower(PowerRequest request, ref PowerRequest? applied)
+    {
+        if (applied != request && TryPort(Port.Power, () => _power.Apply(request)))
+        {
+            applied = request;
+        }
     }
 
     private bool TryReadInput(out EngineInput input)

@@ -218,6 +218,49 @@ public sealed class EngineHostTests : IDisposable
         _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
     }
 
+    [Fact]
+    public void CursorRefusesMove_LogsOnceStaysBoundedAndLogsRecovery()
+    {
+        _cursor.RefuseSet = true;
+        _idle.Idle = TimeSpan.FromHours(1);
+        _host.Start();
+        SpinWait.SpinUntil(() => _cursor.SetCount >= 1, Timeout).ShouldBeTrue();
+
+        var before = _cursor.SetCount;
+        Thread.Sleep(1000);
+        var attempts = _cursor.SetCount - before;
+
+        attempts.ShouldBeLessThan(200);
+        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
+        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(0);
+        _power.Last.ShouldBe(PowerRequest.KeepSystemAndDisplayAwake);
+        _host.Snapshot.State.ShouldBe(EngineState.Moving);
+
+        _cursor.RefuseSet = false;
+
+        // Fake time is frozen, so the finished path never restarts by itself; re-arm the engine to force a new move.
+        _host.Pause(PauseDuration.Indefinite);
+        _host.Resume();
+
+        SpinWait.SpinUntil(() => _logger.Levels.Contains(LogLevel.Information), Timeout).ShouldBeTrue();
+        Thread.Sleep(200);
+        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(1);
+        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
+    }
+
+    [Fact]
+    public void Pause_WhilePortReadsFail_ReleasesPower()
+    {
+        _host.Start();
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.KeepSystemAndDisplayAwake, Timeout).ShouldBeTrue();
+        _idle.ThrowOnRead = true;
+        SpinWait.SpinUntil(() => _logger.Levels.Contains(LogLevel.Warning), Timeout).ShouldBeTrue();
+
+        _host.Pause(PauseDuration.Indefinite);
+
+        SpinWait.SpinUntil(() => _power.Last == PowerRequest.None, Timeout).ShouldBeTrue();
+    }
+
     private static readonly TimeSpan Timeout_Infinite = System.Threading.Timeout.InfiniteTimeSpan;
 
     private EngineEvent[] EventsSnapshot()
