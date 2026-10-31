@@ -58,6 +58,18 @@ public sealed class ActivityLoggerTests
         Assert.Equal(2, _log.Entries.Count);
     }
 
+    [Fact]
+    public void ThrowingActivityLog_DoesNotThrowAndStillForwardsToInner()
+    {
+        var inner = new CountingLogger();
+        var logger = new ActivityLogger<ActivityLoggerTests>(new ThrowingLog(), _time, inner);
+
+        var ex = Record.Exception(() => Write(logger, LogLevel.Error, "boom"));
+
+        Assert.Null(ex);
+        Assert.Equal(1, inner.Count);
+    }
+
     private static void Write(ActivityLogger<ActivityLoggerTests> logger, LogLevel level, string message, Exception? exception = null) =>
         logger.Log(level, 0, message, exception, (m, _) => m);
 
@@ -66,6 +78,11 @@ public sealed class ActivityLoggerTests
         public List<LogEntry> Entries { get; } = [];
 
         public void Append(LogEntry entry) => Entries.Add(entry);
+    }
+
+    private sealed class ThrowingLog : IActivityLog
+    {
+        public void Append(LogEntry entry) => throw new ArgumentException("bad");
     }
 
     private sealed class CountingLogger : ILogger<ActivityLoggerTests>

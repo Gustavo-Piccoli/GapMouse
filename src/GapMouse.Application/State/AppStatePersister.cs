@@ -93,6 +93,7 @@ public sealed partial class AppStatePersister : IDisposable
         }
     }
 
+    // Never throws: persistence is best-effort and a failure must not take the app down.
     private void SaveLocked()
     {
         try
@@ -100,7 +101,9 @@ public sealed partial class AppStatePersister : IDisposable
             _store.Save(new AppState(_engine.Snapshot.Today));
             _failing = false;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+#pragma warning disable CA1031 // Runs on timer/pool threads and in Dispose: any escaping exception would terminate the process.
+        catch (Exception ex)
+#pragma warning restore CA1031
         {
             if (!_failing)
             {

@@ -21,8 +21,9 @@ portable folder, and a corrupt or hand-edited file must never stop it from start
   to their defaults. Every case produces a warning instead of an exception. A broken
   state file is treated as no state.
 - **Log retention.** One file per day, `gapmouse-yyyy-MM-dd.log`. Old files are removed
-  by the date in the file name (not the modified time), only for names matching
-  `gapmouse-*.log`, so unrelated files in the folder are never touched.
+  by the date in the file name (not the modified time): a file is deleted when that date
+  is earlier than today minus N, so N = 7 keeps today plus the 7 previous days. Only names matching
+  `gapmouse-*.log` are considered, so unrelated files in the folder are never touched.
 - **`AppSettings` lives in Application.** It is a plain record plus ports
   (`ISettingsStore`, `IAppStateStore`, `IActivityLog`); Infrastructure holds all file
   access. An architecture test keeps `System.Text.Json`, `System.Net.Http` and

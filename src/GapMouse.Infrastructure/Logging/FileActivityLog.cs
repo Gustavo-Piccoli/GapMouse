@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using GapMouse.Application.Logging;
@@ -50,14 +51,14 @@ public sealed partial class FileActivityLog(string logsDirectory, TimeProvider t
                 var name = $"gapmouse-{entry.At.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}.log";
                 File.AppendAllText(Path.Combine(logsDirectory, name), entry.ToLine() + Environment.NewLine, Utf8NoBom);
             }
-            catch (IOException)
-            {
-            }
-            catch (UnauthorizedAccessException)
+            catch (Exception ex) when (IsFileSystemFailure(ex))
             {
             }
         }
     }
+
+    private static bool IsFileSystemFailure(Exception ex) =>
+        ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or SecurityException;
 
     [GeneratedRegex(@"^gapmouse-(\d{4}-\d{2}-\d{2})\.log$")]
     private static partial Regex LogFileName();
@@ -81,14 +82,18 @@ public sealed partial class FileActivityLog(string logsDirectory, TimeProvider t
                     && DateOnly.TryParseExact(match.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
                     && date < cutoff)
                 {
-                    File.Delete(file);
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (Exception ex) when (IsFileSystemFailure(ex))
+                    {
+                        // One undeletable file must not stop the rest of the cleanup.
+                    }
                 }
             }
         }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
+        catch (Exception ex) when (IsFileSystemFailure(ex))
         {
         }
     }

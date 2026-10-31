@@ -34,6 +34,14 @@ public sealed class ActivityLogger<T>(IActivityLog log, TimeProvider time, ILogg
             message += ": " + exception.Message;
         }
 
-        log.Append(new LogEntry(time.GetLocalNow(), kind, message));
+        try
+        {
+            log.Append(new LogEntry(time.GetLocalNow(), kind, message));
+        }
+#pragma warning disable CA1031 // A logger must never throw, whatever the activity log does.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+        }
     }
 }
