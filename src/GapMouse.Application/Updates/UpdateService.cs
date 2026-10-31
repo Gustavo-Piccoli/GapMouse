@@ -13,6 +13,7 @@ public sealed partial class UpdateService(IReleaseSource source, Version current
     private Func<bool>? _isEnabled;
     private int _running;
     private int _disposed;
+    private int _started;
 
     public event EventHandler<UpdateCheckResult>? UpdateFound;
 
@@ -30,6 +31,12 @@ public sealed partial class UpdateService(IReleaseSource source, Version current
     public void Start(Func<bool> isEnabled)
     {
         ArgumentNullException.ThrowIfNull(isEnabled);
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) == 1, this);
+        if (Interlocked.CompareExchange(ref _started, 1, 0) != 0)
+        {
+            throw new InvalidOperationException("The update service is already started.");
+        }
+
         _isEnabled = isEnabled;
         _timer = time.CreateTimer(OnTick, null, TimeSpan.Zero, Period);
     }
@@ -74,17 +81,24 @@ public sealed partial class UpdateService(IReleaseSource source, Version current
 
     private void OnTick(object? state)
     {
-        if (Volatile.Read(ref _disposed) == 1 || _isEnabled is not { } isEnabled || !isEnabled())
+        try
         {
-            return;
-        }
+            if (Volatile.Read(ref _disposed) == 1 || _isEnabled is not { } isEnabled || !isEnabled())
+            {
+                return;
+            }
 
-        if (Interlocked.CompareExchange(ref _running, 1, 0) != 0)
+            if (Interlocked.CompareExchange(ref _running, 1, 0) != 0)
+            {
+                return;
+            }
+
+            _ = CheckScheduledAsync();
+        }
+        catch (Exception ex)
         {
-            return;
+            LogScheduledFailed(ex);
         }
-
-        _ = CheckScheduledAsync();
     }
 
     private async Task CheckScheduledAsync()
