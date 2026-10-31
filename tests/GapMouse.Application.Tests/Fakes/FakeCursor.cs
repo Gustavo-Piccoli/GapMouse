@@ -7,7 +7,16 @@ internal sealed class FakeCursor : ICursorController
 {
     private int _setCount;
 
+    private volatile bool _refuseSet;
+
     public bool ThrowOnSet { get; set; }
+
+    /// <summary>When true, <see cref="TrySetPosition"/> returns false, like SetCursorPos on a locked desktop.</summary>
+    public bool RefuseSet
+    {
+        get => _refuseSet;
+        set => _refuseSet = value;
+    }
 
     public int SetCount => Volatile.Read(ref _setCount);
 
@@ -21,6 +30,6 @@ internal sealed class FakeCursor : ICursorController
             throw new InvalidOperationException("cursor boom");
         }
 
-        return true;
+        return !_refuseSet;
     }
 }
