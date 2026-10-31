@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GapMouse.Application\GapMouse.Application.csproj" />
+    <ProjectReference Include="..\GapMouse.Domain\GapMouse.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GapMouse.Application/GapMouse.Application.csproj" />
+    <Project Path="src/GapMouse.Domain/GapMouse.Domain.csproj" />
+    <Project Path="src/GapMouse.Infrastructure/GapMouse.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GapMouse.Application.Tests/GapMouse.Application.Tests.csproj" />
+    <Project Path="tests/GapMouse.Architecture.Tests/GapMouse.Architecture.Tests.csproj" />
+    <Project Path="tests/GapMouse.Domain.Tests/GapMouse.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
