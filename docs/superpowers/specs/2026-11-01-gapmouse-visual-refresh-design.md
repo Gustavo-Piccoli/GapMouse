@@ -147,7 +147,7 @@ alta acima de títulos.
 ### 6.4 Movimento
 
 Uma única animação de assinatura: a face da placa vira ao mudar de estado (escala horizontal de 0,3 a 1 em 220 ms,
-`CubicEaseOut`). Hover e seleção usam as transições padrão do Fluent. Nada mais se move.
+`CubicEaseOut`). A animação também toca quando o Início volta a ser exibido (retorno à aba, primeira exibição), porque o `TabControl` desanexa o conteúdo; isso é intencional. Ela não acompanha a opção "Efeitos de animação" do Windows (o Avalonia não expõe sinal de movimento reduzido); em 220 ms isso foi aceito. Hover e seleção usam as transições padrão do Fluent. Nada mais se move.
 
 ## 7. Telas
 
@@ -156,7 +156,7 @@ Uma única animação de assinatura: a face da placa vira ao mudar de estado (es
 Assets`: Início `E80F`, Logs `E9F9`, Configurações `E713`, Sobre `E946`) e rótulo; o item selecionado ganha
 fundo `GmSurfaceHoverBrush` e uma barra de 3 px × 16 px em `GmAccentBrush` à esquerda do ícone (indicador de
 seleção do Windows 11, não borda de cartão). Conteúdo em `GmGroundBrush`. Os itens continuam `TabItem` (acessíveis
-por teclado e UI Automation).
+por teclado e UI Automation). No tema claro o fundo do item selecionado (#EEF0F4) fica quase igual ao do rail (#E6E9F0); a seleção é carregada pela barra de destaque.
 
 **Início.** Duas colunas. À esquerda, a face da placa (220 px de largura, altura total): anel do furo (56 px,
 trilho na tinta a 25 %, arco na tinta, `SweepAngle = IdleProgress × 360`; no estado pausado só o trilho), a
@@ -178,7 +178,7 @@ linhas separadas por divisórias; rótulo à esquerda (e dica/erro abaixo dele),
 Salvar (`accent`), Restaurar padrões e a mensagem de status. Bindings e o `x:Name="HotkeyBox"` intactos.
 
 **Sobre.** Cabeçalho com o ícone do app (48 px), nome e versão; um cartão com linhas: Licença; Repositório (URL +
-botão Abrir); Arquivo de configurações e Pasta de logs (caminho em `SelectableTextBlock` + botão Abrir pasta);
+botão Abrir); Arquivo de configurações e Pasta de logs (caminho em `SelectableTextBlock` numa linha só, cortado com reticências no início e com o caminho completo em dica de ferramenta, em vez de quebrar; botão Abrir pasta);
 Atualizações (botão Verificar, status e Abrir release quando houver).
 
 **Pausa personalizada.** Mesmos tokens: fundo `GmGroundBrush`, prompt, TextBox, erro em `GmCriticalTextBrush`,

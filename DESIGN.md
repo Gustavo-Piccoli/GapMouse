@@ -205,7 +205,7 @@ Stamped and steady: every component is a flat fixed-geometry field with one job.
 - **Shape:** 12px radius, 220px wide, 16px padding, full height of the content area.
 - **State fills:** cobalt, green or amber per the Committed State Rule; the face sets foreground ink and children inherit it, so ring, word and secondary lines follow.
 - **Content:** knob-hole ring at top centre; state word in bold caps at bottom; idle and pause text beneath in secondary ink.
-- **Motion:** on state change the face flips horizontally, ScaleX 0.3 to 1 over 0.22s with a cubic ease-out, authored inside each state-class style so it replays.
+- **Motion:** on state change the face flips horizontally, ScaleX 0.3 to 1 over 0.22s with a cubic ease-out, authored inside each state-class style so it replays. It also plays when Home is shown again (returning to the tab, first show), because the tab detaches its content; this is intended. It does not follow the Windows "animation effects" setting (Avalonia exposes no reduced-motion signal); at 0.22s that is accepted.
 
 ### Buttons
 - **Accent:** cobalt fill (#2F6FED dark / #2F5FD0 light), white text, 6px radius; hover 0.9 opacity, pressed 0.8, disabled 0.5. Used once per view (Pause/Resume, Save, OK). Pause is a split-style drop-down offering 10 minutes, 30 minutes, 1 hour, custom, until resumed.
@@ -225,10 +225,14 @@ Stamped and steady: every component is a flat fixed-geometry field with one job.
 ### Navigation
 - **Style:** card-stock rail at 184px with the app icon and name at top, then 40px items (16px Segoe Fluent Icons glyph plus 14px label) at 2px gap.
 - **States:** hover and selected share the one-step surface fill; selected adds the 3x16 cobalt pill at the left; keyboard focus draws a 2px text-colour outline inside the item.
+- **Light-theme note:** the selected pill (#EEF0F4) sits close to the rail (#E6E9F0), about 1.05:1, so in light theme selection is carried by the cobalt bar, as in Windows 11 Settings.
 
 ### Log Row and Tag
 - **Row:** mono tabular timestamp (muted), a 76px stamped tag, then the message, 10px column gap, 6/4 item padding for density.
 - **Tag:** 6px radius, 2px vertical padding, 11px SemiBold centered text on a fill from the Fixed Tag Table Rule.
+
+### About Paths
+- **Trimming:** settings file, logs folder and repository URL show on one line (12px muted, no wrap), trimmed with a leading ellipsis so the file name stays visible; the full path is the tooltip, and the text stays selectable.
 
 ## Do's and Don'ts
 
