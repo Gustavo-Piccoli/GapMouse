@@ -98,6 +98,13 @@
     <Style Selector="Button.quiet">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{DynamicResource GmTextMutedBrush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.quiet:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.quiet:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
   </UserControl.Styles>
 

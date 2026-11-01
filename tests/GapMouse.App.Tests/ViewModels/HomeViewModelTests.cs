@@ -28,7 +28,7 @@ public sealed class HomeViewModelTests
         With(s => s with { LastIdle = TimeSpan.FromSeconds(45), IdleThreshold = TimeSpan.FromSeconds(120) });
         var vm = Create();
         vm.Refresh();
-        vm.IdleText.ShouldBe("Idle for 45 s of 120 s");
+        vm.IdleText.ShouldBe("Idle for 45\u00A0s of 120\u00A0s");
         vm.IdleProgress.ShouldBe(0.375);
         vm.StateText.ShouldBe("Waiting");
     }
@@ -120,7 +120,7 @@ public sealed class HomeViewModelTests
         vm.Start();
         With(s => s with { LastIdle = TimeSpan.FromSeconds(30) });
         _time.Advance(TimeSpan.FromSeconds(1));
-        vm.IdleText.ShouldBe("Idle for 30 s of 120 s");
+        vm.IdleText.ShouldBe("Idle for 30\u00A0s of 120\u00A0s");
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class HomeViewModelTests
         With(s => s with { LastIdle = TimeSpan.FromSeconds(30) });
         _time.Advance(TimeSpan.FromSeconds(2));
         _engine.Raise(new EngineStarted(_time.GetUtcNow()));
-        vm.IdleText.ShouldBe("Idle for 0 s of 120 s");
+        vm.IdleText.ShouldBe("Idle for 0\u00A0s of 120\u00A0s");
     }
 
     private sealed class FakePrompt : IPausePrompt
