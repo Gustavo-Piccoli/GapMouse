@@ -96,4 +96,16 @@ public sealed class LocalizerTests
 
         localizer.Culture.Name.ShouldBe("en-US");
     }
+
+    [Fact]
+    public void HomeRecentTitle_IsLocalized()
+    {
+        var localizer = Create();
+
+        localizer.SetLanguage(UiLanguage.English);
+        localizer.HomeRecentTitle.ShouldBe("Recent");
+
+        localizer.SetLanguage(UiLanguage.Portuguese);
+        localizer.HomeRecentTitle.ShouldBe("Recentes");
+    }
 }

@@ -72,7 +72,15 @@ static bool Capture(string scenario, UiLanguage language, int width, int height,
     }
 
     Dispatcher.UIThread.RunJobs();
-    AvaloniaHeadlessPlatform.ForceRenderTimerTick(30);
+    // Animations follow wall-clock time, so let the face flip (220 ms) finish between tick batches.
+    for (var i = 0; i < 5; i++)
+    {
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick(6);
+        Dispatcher.UIThread.RunJobs();
+        Thread.Sleep(80);
+    }
+
+    AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
     Dispatcher.UIThread.RunJobs();
     var frame = window.CaptureRenderedFrame();
     var ok = frame is not null;
