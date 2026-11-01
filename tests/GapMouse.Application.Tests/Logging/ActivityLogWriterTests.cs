@@ -1,6 +1,6 @@
 using GapMouse.Application.Logging;
-using GapMouse.Application.Tests.Fakes;
 using GapMouse.Domain.Engine;
+using GapMouse.Testing.Engine;
 
 namespace GapMouse.Application.Tests.Logging;
 

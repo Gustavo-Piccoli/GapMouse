@@ -3,9 +3,9 @@ using GapMouse.Domain.Engine;
 using GapMouse.Domain.Pausing;
 using GapMouse.Domain.Settings;
 
-namespace GapMouse.Application.Tests.Fakes;
+namespace GapMouse.Testing.Engine;
 
-internal sealed class FakeEngineController : IEngineController
+public sealed class FakeEngineController : IEngineController
 {
     public EngineSnapshot Snapshot { get; set; } = new(
         EngineState.Waiting,

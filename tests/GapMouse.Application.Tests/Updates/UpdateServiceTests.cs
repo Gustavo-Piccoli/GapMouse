@@ -1,6 +1,7 @@
 using System.Text.Json;
 using GapMouse.Application.Tests.Fakes;
 using GapMouse.Application.Updates;
+using GapMouse.Testing.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 

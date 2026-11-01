@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\src\GapMouse.Domain\GapMouse.Domain.csproj" />
     <ProjectReference Include="..\..\src\GapMouse.Application\GapMouse.Application.csproj" />
     <ProjectReference Include="..\..\src\GapMouse.Infrastructure\GapMouse.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\GapMouse.App\GapMouse.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>

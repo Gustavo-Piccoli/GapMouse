@@ -3,6 +3,7 @@ using GapMouse.Application.Tests.Fakes;
 using GapMouse.Domain.Engine;
 using GapMouse.Domain.Pausing;
 using GapMouse.Domain.Settings;
+using GapMouse.Testing.Logging;
 using GapMouse.Testing.Randomness;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;

@@ -1,6 +1,7 @@
 using System.Security;
 using GapMouse.Application.Startup;
 using GapMouse.Application.Tests.Fakes;
+using GapMouse.Testing.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace GapMouse.Application.Tests.Startup;

@@ -1,7 +1,8 @@
 using GapMouse.Application.State;
-using GapMouse.Application.Tests.Fakes;
 using GapMouse.Domain.Engine;
 using GapMouse.Domain.Pausing;
+using GapMouse.Testing.Engine;
+using GapMouse.Testing.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 
