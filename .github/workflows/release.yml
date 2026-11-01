@@ -85,6 +85,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
@@ -106,14 +108,78 @@ jobs:
           name: portable-${{ matrix.arch }}
           path: artifacts/dist/GapMouse-${{ needs.version.outputs.version }}-${{ matrix.arch }}-portable.zip
 
-  package:
+  installer:
     needs: [version, build]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+      # Pinned to the version Chocolatey served when this job was written (Inno Setup 6.7.1).
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress --version 6.7.1
+      - uses: actions/download-artifact@v8
+        with:
+          name: publish-x64
+          path: artifacts/publish/x64
+      - uses: actions/download-artifact@v8
+        with:
+          name: publish-arm64
+          path: artifacts/publish/arm64
+      - name: Build installers
+        shell: pwsh
+        run: |
+          foreach ($arch in 'x64', 'arm64') {
+            & ./build/New-Installer.ps1 -PublishDir "artifacts/publish/$arch" -Version ${{ needs.version.outputs.version }} -Arch $arch -OutputDir artifacts/installer
+          }
+      - uses: actions/upload-artifact@v7
+        with:
+          name: installer-x64
+          path: artifacts/installer/GapMouse-Setup-${{ needs.version.outputs.version }}-x64.exe
+      - uses: actions/upload-artifact@v7
+        with:
+          name: installer-arm64
+          path: artifacts/installer/GapMouse-Setup-${{ needs.version.outputs.version }}-arm64.exe
+
+  installer-test:
+    needs: [version, installer]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-latest
+          - arch: arm64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: installer-${{ matrix.arch }}
+          path: artifacts/installer
+      - name: Smoke test installer
+        shell: pwsh
+        run: ./build/Test-Installer.ps1 -InstallerPath artifacts/installer/GapMouse-Setup-${{ needs.version.outputs.version }}-${{ matrix.arch }}.exe
+
+  package:
+    needs: [version, build, installer-test]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
       - uses: actions/download-artifact@v8
         with:
           pattern: portable-*
+          path: artifacts/dist
+          merge-multiple: true
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: installer-*
           path: artifacts/dist
           merge-multiple: true
       - name: Checksums
@@ -121,7 +187,7 @@ jobs:
         run: ./build/New-Checksums.ps1 -Directory artifacts/dist
       - name: Validate package
         shell: pwsh
-        run: ./build/Test-Package.ps1 -Directory artifacts/dist -Version ${{ needs.version.outputs.version }} -Arch @('x64','arm64')
+        run: ./build/Test-Package.ps1 -Directory artifacts/dist -Version ${{ needs.version.outputs.version }} -Arch @('x64','arm64') -RequireInstaller
       - uses: actions/upload-artifact@v7
         with:
           name: dist
