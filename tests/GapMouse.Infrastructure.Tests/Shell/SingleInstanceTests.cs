@@ -1,3 +1,5 @@
+using System.Security.AccessControl;
+using System.Security.Principal;
 using GapMouse.Infrastructure.Shell;
 
 namespace GapMouse.Infrastructure.Tests.Shell;
@@ -21,6 +23,20 @@ public sealed class SingleInstanceTests
     {
         var name = UniqueName();
         using var first = SingleInstance.TryAcquire(name);
+
+        SingleInstance.TryAcquire(name).ShouldBeNull();
+    }
+
+    [Fact]
+    public void TryAcquire_MutexDeniesAccess_ReturnsNull()
+    {
+        var name = UniqueName();
+        var security = new MutexSecurity();
+        security.AddAccessRule(new MutexAccessRule(
+            WindowsIdentity.GetCurrent().User!,
+            MutexRights.FullControl,
+            AccessControlType.Deny));
+        using var foreign = MutexAcl.Create(true, name, out _, security);
 
         SingleInstance.TryAcquire(name).ShouldBeNull();
     }
