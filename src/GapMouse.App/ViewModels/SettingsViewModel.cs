@@ -240,8 +240,35 @@ public sealed class SettingsViewModel : ViewModelBase, IDisposable
     };
 
     /// <summary>Sets the hotkey text from a key press in the capture box (key is A–Z, 0–9 or F1–F24).</summary>
-    public void CaptureHotkey(HotkeyModifiers modifiers, string key) =>
-        HotkeyText = new HotkeyGesture(modifiers, key).ToString();
+    public void CaptureHotkey(HotkeyModifiers modifiers, string key)
+    {
+        List<string> parts = [];
+        if (modifiers.HasFlag(HotkeyModifiers.Control))
+        {
+            parts.Add("Ctrl");
+        }
+
+        if (modifiers.HasFlag(HotkeyModifiers.Alt))
+        {
+            parts.Add("Alt");
+        }
+
+        if (modifiers.HasFlag(HotkeyModifiers.Shift))
+        {
+            parts.Add("Shift");
+        }
+
+        if (modifiers.HasFlag(HotkeyModifiers.Windows))
+        {
+            parts.Add("Win");
+        }
+
+        parts.Add(key);
+        if (HotkeyGesture.TryParse(string.Join('+', parts), out var gesture))
+        {
+            HotkeyText = gesture.ToString();
+        }
+    }
 
     public void Dispose()
     {
