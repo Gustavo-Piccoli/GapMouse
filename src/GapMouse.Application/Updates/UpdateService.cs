@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 namespace GapMouse.Application.Updates;
 
 /// <summary>Checks for newer releases on demand and, once started, every 24 hours while enabled.</summary>
-public sealed partial class UpdateService(IReleaseSource source, Version currentVersion, TimeProvider time, ILogger<UpdateService> logger) : IDisposable
+public sealed partial class UpdateService(IReleaseSource source, Version currentVersion, TimeProvider time, ILogger<UpdateService> logger) : IUpdateChecker, IDisposable
 {
     private static readonly TimeSpan CheckTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan Period = TimeSpan.FromHours(24);

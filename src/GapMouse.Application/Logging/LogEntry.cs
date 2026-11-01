@@ -1,9 +1,10 @@
 using System.Globalization;
+using GapMouse.Domain.Engine;
 
 namespace GapMouse.Application.Logging;
 
 /// <summary>One line of the activity log; <see cref="At"/> is local time.</summary>
-public sealed record LogEntry(DateTimeOffset At, LogKind Kind, string Message)
+public sealed record LogEntry(DateTimeOffset At, LogKind Kind, string Message, EngineEvent? Source = null)
 {
     public string Tag => Kind switch
     {

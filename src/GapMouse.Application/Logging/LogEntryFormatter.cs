@@ -9,7 +9,7 @@ public static class LogEntryFormatter
     public static LogEntry FromEvent(EngineEvent e)
     {
         ArgumentNullException.ThrowIfNull(e);
-        return e switch
+        var entry = e switch
         {
             EngineStarted => new LogEntry(e.At, LogKind.Start, "GapMouse started"),
             WaitingStarted w => new LogEntry(e.At, LogKind.Waiting, $"Waiting for {Seconds(w.IdleThreshold)} s of inactivity"),
@@ -23,6 +23,7 @@ public static class LogEntryFormatter
             EngineStopped => new LogEntry(e.At, LogKind.Stop, "GapMouse stopped"),
             _ => throw new ArgumentOutOfRangeException(nameof(e), e.GetType().Name, "Unknown engine event."),
         };
+        return entry with { Source = e };
     }
 
     private static string Seconds(TimeSpan value) =>

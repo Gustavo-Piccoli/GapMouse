@@ -10,6 +10,14 @@ public sealed class LogEntryFormatterTests
     private static readonly DateTimeOffset At = new(2026, 10, 31, 9, 5, 3, TimeSpan.Zero);
 
     [Fact]
+    public void FromEvent_SetsSource()
+    {
+        var e = new EngineStarted(At);
+
+        LogEntryFormatter.FromEvent(e).Source.ShouldBeSameAs(e);
+    }
+
+    [Fact]
     public void FromEvent_EngineStarted_FormatsStart()
     {
         var entry = LogEntryFormatter.FromEvent(new EngineStarted(At));

@@ -7,7 +7,7 @@ using GapMouse.Application.Logging;
 namespace GapMouse.Infrastructure.Logging;
 
 /// <summary>Best-effort daily log files (<c>gapmouse-yyyy-MM-dd.log</c>) with retention.</summary>
-public sealed partial class FileActivityLog(string logsDirectory, TimeProvider time) : IActivityLog
+public sealed partial class FileActivityLog(string logsDirectory, TimeProvider time) : IActivityLog, ILogFileOptions
 {
     private static readonly UTF8Encoding Utf8NoBom = new(false);
 

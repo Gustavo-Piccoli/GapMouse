@@ -33,7 +33,10 @@ public sealed class JsonSettingsStore(string settingsFilePath) : ISettingsStore
             return new SettingsLoadResult(
                 AppSettings.Default,
                 true,
-                [$"Settings: file could not be read ({ex.Message}); using defaults."]);
+                [$"Settings: file could not be read ({ex.Message}); using defaults."])
+            {
+                ReadFailed = true,
+            };
         }
 
         if (document is null)
