@@ -47,11 +47,18 @@ public sealed class Win32TrayIconTests
     {
         using var window = new ShellWindow();
         var tray = new Win32TrayIcon(window, Icons());
-        tray.SetState(TrayIconState.Paused, "GapMouse test");
+        try
+        {
+            tray.SetState(TrayIconState.Paused, "GapMouse test");
 
-        tray.Dispose();
+            tray.Dispose();
 
-        tray.IsAdded.ShouldBeFalse();
+            tray.IsAdded.ShouldBeFalse();
+        }
+        finally
+        {
+            tray.Dispose();
+        }
     }
 
     [Fact]
