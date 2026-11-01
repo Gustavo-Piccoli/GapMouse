@@ -21,6 +21,10 @@ $uninstallKeyMachine = $uninstallKey -replace '^HKCU:', 'HKLM:'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $runName = 'GapMouse'
 $shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'GapMouse.lnk'
+$desktopShortcut = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'GapMouse.lnk'
+if (Test-Path -LiteralPath $desktopShortcut) {
+    throw "A desktop shortcut already exists ($desktopShortcut). Remove it first: this test would delete it."
+}
 
 function Get-RunValue {
     $item = Get-ItemProperty -LiteralPath $runKey -Name $runName -ErrorAction SilentlyContinue
@@ -82,12 +86,12 @@ $originalRun = Get-RunValue
 $dirs = New-Object System.Collections.Generic.List[string]
 $started = $null
 try {
-    # Phase 1: install with the startup task, then uninstall.
-    Write-Host '== Phase 1: install with startup task'
+    # Phase 1: install with the startup and desktop shortcut tasks, then uninstall.
+    Write-Host '== Phase 1: install with startup and desktop shortcut tasks'
     $dir = New-Scratch; $dirs.Add($dir)
     $log = "$dir.install1.log"
     Remove-RunValue
-    $code = Invoke-Install $dir $log 'startup'
+    $code = Invoke-Install $dir $log 'startup,desktopicon'
     Assert ($code -eq 0) "installer exit code is 0 (was $code)"
     Assert (Test-Path -LiteralPath (Join-Path $dir 'GapMouse.exe')) 'GapMouse.exe installed'
     Assert (Test-Path -LiteralPath (Join-Path $dir 'LICENSE.txt')) 'LICENSE.txt installed'
@@ -99,18 +103,21 @@ try {
     Assert (Test-Path -LiteralPath $uninstallKey) 'uninstall key exists under HKCU'
     Assert (-not (Test-Path -LiteralPath $uninstallKeyMachine)) 'uninstall key does not exist under HKLM'
     Assert (Test-Path -LiteralPath $shortcut) "Start Menu shortcut exists ($shortcut)"
+    Assert (Test-Path -LiteralPath $desktopShortcut) "desktop shortcut exists ($desktopShortcut)"
     Invoke-Uninstall $dir
     Assert (-not (Test-Path -LiteralPath (Join-Path $dir 'GapMouse.exe'))) 'GapMouse.exe removed by uninstall'
     Assert ($null -eq (Get-RunValue)) 'Run value removed by uninstall'
     Assert (-not (Test-Path -LiteralPath $shortcut)) 'shortcut removed by uninstall'
+    Assert (-not (Test-Path -LiteralPath $desktopShortcut)) 'desktop shortcut removed by uninstall'
 
-    # Phase 2: no startup task; uninstall must not touch a foreign Run value.
-    Write-Host '== Phase 2: install without startup task'
+    # Phase 2: no tasks; uninstall must not touch a foreign Run value.
+    Write-Host '== Phase 2: install without tasks'
     $dir = New-Scratch; $dirs.Add($dir)
     $log = "$dir.install2.log"
     $code = Invoke-Install $dir $log ''
     Assert ($code -eq 0) "installer exit code is 0 (was $code)"
     Assert ($null -eq (Get-RunValue)) 'Run value absent without startup task'
+    Assert (-not (Test-Path -LiteralPath $desktopShortcut)) 'desktop shortcut absent without desktopicon task'
     $foreign = '"C:\Elsewhere\GapMouse.exe" --minimized'
     Set-RunValue $foreign
     Invoke-Uninstall $dir
