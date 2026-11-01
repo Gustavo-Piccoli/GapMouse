@@ -81,6 +81,7 @@ public sealed class JsonSettingsStore(string settingsFilePath) : ISettingsStore
                 MovementIntervalMaxSeconds = (int)engine.MovementIntervalMax.TotalSeconds,
                 AmplitudePixels = engine.AmplitudePixels,
                 KeepDisplayOn = engine.KeepDisplayOn,
+                KeepAwakeWhileLocked = engine.KeepAwakeWhileLocked,
             },
             System = new SettingsDocument.SystemSection
             {
@@ -122,7 +123,8 @@ public sealed class JsonSettingsStore(string settingsFilePath) : ISettingsStore
             section.MovementIntervalMinSeconds ?? (int)d.MovementIntervalMin.TotalSeconds,
             section.MovementIntervalMaxSeconds ?? (int)d.MovementIntervalMax.TotalSeconds,
             section.AmplitudePixels ?? d.AmplitudePixels,
-            section.KeepDisplayOn ?? d.KeepDisplayOn);
+            section.KeepDisplayOn ?? d.KeepDisplayOn,
+            section.KeepAwakeWhileLocked ?? d.KeepAwakeWhileLocked);
 
         if (result.IsValid)
         {

@@ -125,6 +125,38 @@ public class JsonSettingsStoreTests
     }
 
     [Fact]
+    public void Load_WithoutKeepAwakeWhileLocked_UsesDefaultWithoutWarning()
+    {
+        using var dir = new TempDirectory();
+        var path = Path.Combine(dir.Path, FileName);
+        File.WriteAllText(
+            path,
+            """{"schemaVersion":1,"engine":{"idleThresholdSeconds":300,"checkIntervalSeconds":5,"movementIntervalMinSeconds":20,"movementIntervalMaxSeconds":40,"amplitudePixels":200,"keepDisplayOn":false}}""");
+
+        var result = new JsonSettingsStore(path).Load();
+
+        result.Settings.Engine.KeepAwakeWhileLocked.ShouldBeFalse();
+        result.Settings.Engine.AmplitudePixels.ShouldBe(200);
+        result.Warnings.ShouldBeEmpty();
+        result.FileExisted.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void SaveThenLoad_RoundTripsKeepAwakeWhileLocked()
+    {
+        using var dir = new TempDirectory();
+        var store = new JsonSettingsStore(Path.Combine(dir.Path, FileName));
+        var settings = AppSettings.Default with { Engine = EngineSettings.Create(120, 1, 10, 25, 120, true, true).Value };
+
+        store.Save(settings);
+        var result = store.Load();
+
+        result.Settings.Engine.KeepAwakeWhileLocked.ShouldBeTrue();
+        result.Settings.ShouldBe(settings);
+        result.Warnings.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Load_MissingSections_UsesDefaultsWithoutWarnings()
     {
         using var dir = new TempDirectory();

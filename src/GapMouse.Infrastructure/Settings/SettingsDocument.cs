@@ -27,6 +27,8 @@ internal sealed class SettingsDocument
         public int? AmplitudePixels { get; set; }
 
         public bool? KeepDisplayOn { get; set; }
+
+        public bool? KeepAwakeWhileLocked { get; set; }
     }
 
     internal sealed class SystemSection

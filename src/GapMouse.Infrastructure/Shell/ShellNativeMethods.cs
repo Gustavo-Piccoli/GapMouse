@@ -12,6 +12,16 @@ internal static unsafe partial class ShellNativeMethods
     internal const uint WM_ENDSESSION = 0x0016;
     internal const uint WM_CONTEXTMENU = 0x007B;
     internal const uint WM_HOTKEY = 0x0312;
+    internal const uint WM_WTSSESSION_CHANGE = 0x02B1;
+    internal const nint WTS_SESSION_LOCK = 0x7;
+    internal const nint WTS_SESSION_UNLOCK = 0x8;
+    internal const uint NOTIFY_FOR_THIS_SESSION = 0;
+    internal const uint WTS_CURRENT_SESSION = 0xFFFFFFFF;
+    internal const int WTSSessionInfoEx = 25;
+
+    // WTSINFOEX_LEVEL1_W.SessionFlags. Windows 10+ semantics; Windows 7 had these two values inverted.
+    internal const int WTS_SESSIONSTATE_LOCK = 0;
+    internal const int WTS_SESSIONSTATE_UNLOCK = 1;
     internal const uint WM_LBUTTONDBLCLK = 0x0203;
     internal const uint WM_APP = 0x8000;
     internal const uint NIN_BALLOONUSERCLICK = 0x0405;
@@ -160,6 +170,21 @@ internal static unsafe partial class ShellNativeMethods
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool UnregisterHotKey(nint hWnd, int id);
+
+    [LibraryImport("wtsapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool WTSRegisterSessionNotification(nint hWnd, uint dwFlags);
+
+    [LibraryImport("wtsapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool WTSUnRegisterSessionNotification(nint hWnd);
+
+    [LibraryImport("wtsapi32.dll", EntryPoint = "WTSQuerySessionInformationW", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool WTSQuerySessionInformationW(nint hServer, uint sessionId, int wtsInfoClass, out nint ppBuffer, out uint pBytesReturned);
+
+    [LibraryImport("wtsapi32.dll")]
+    internal static partial void WTSFreeMemory(nint pMemory);
 
     internal static bool GetCursor(out NativeMethods.POINT point) => NativeMethods.GetCursorPos(out point);
 }
