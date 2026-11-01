@@ -15,7 +15,7 @@ internal sealed record Scene(Localizer Localizer, MainWindowViewModel Main, IDis
 internal static class Scenarios
 {
     public static readonly string[] Names =
-        ["home-waiting", "home-moving", "home-paused", "logs", "logs-empty", "settings", "about", "custom-pause"];
+        ["home-waiting", "home-moving", "home-paused", "logs", "logs-empty", "settings", "settings-status", "about", "custom-pause"];
 
     // The fake clock uses UTC as its local zone, so every offset below is zero.
     private static readonly DateTimeOffset Now = new(2026, 11, 1, 14, 32, 10, TimeSpan.Zero);
@@ -24,7 +24,7 @@ internal static class Scenarios
     {
         "home-waiting" or "home-moving" or "home-paused" => 0,
         "logs" or "logs-empty" => 1,
-        "settings" => 2,
+        "settings" or "settings-status" => 2,
         "about" => 3,
         _ => 0,
     };
@@ -39,7 +39,7 @@ internal static class Scenarios
 
         var engine = new FakeEngineController { Snapshot = SnapshotFor(scenario) };
         var ui = new ImmediateUiDispatcher();
-        var settings = new InMemorySettingsService();
+        var settings = new InMemorySettingsService { FailToWrite = scenario == "settings-status" };
         var log = new InMemoryActivityLog();
         foreach (var entry in scenario == "logs-empty" ? [] : LogEntries())
         {
@@ -55,6 +55,12 @@ internal static class Scenarios
         home.Refresh();
         var logs = new LogsViewModel(l, log, ui, new NoopClipboardService(), new NoopShellLauncher(), paths.LogsDirectory);
         var settingsVm = new SettingsViewModel(l, settings);
+        if (scenario == "settings-status")
+        {
+            settingsVm.IdleText = "121";
+            settingsVm.SaveCommand.Execute(null);
+        }
+
         var about = new AboutViewModel(l, new NeverUpdateChecker(), new NoopShellLauncher(), ui, paths, "1.1.0");
         var main = new MainWindowViewModel(l, home, logs, settingsVm, about);
         return new Scene(l, main, [home, logs, settingsVm, about]);
