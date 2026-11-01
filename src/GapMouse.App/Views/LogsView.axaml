@@ -1,7 +1,35 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GapMouse.App.ViewModels"
+             xmlns:v="using:GapMouse.App.Views"
              x:Class="GapMouse.App.Views.LogsView"
              x:DataType="vm:LogsViewModel">
-  <TextBlock Text="Logs" Margin="16" />
+  <UserControl.Resources>
+    <v:LogKindBrushConverter x:Key="KindBrush" />
+  </UserControl.Resources>
+  <DockPanel Margin="16">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+      <ComboBox SelectedIndex="{Binding FilterIndex}" MinWidth="140">
+        <ComboBoxItem Content="{Binding L.LogsFilterAll}" />
+        <ComboBoxItem Content="{Binding L.LogsFilterMovement}" />
+        <ComboBoxItem Content="{Binding L.LogsFilterPauses}" />
+        <ComboBoxItem Content="{Binding L.LogsFilterSystem}" />
+      </ComboBox>
+      <Button Content="{Binding L.LogsCopy}" Command="{Binding CopyCommand}" />
+      <Button Content="{Binding L.LogsOpenFolder}" Command="{Binding OpenFolderCommand}" />
+      <Button Content="{Binding L.LogsClear}" Command="{Binding ClearCommand}" />
+    </StackPanel>
+    <ListBox ItemsSource="{Binding Lines}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:LogLineViewModel">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding Time}" FontFamily="Consolas,monospace" />
+            <TextBlock Text="{Binding Tag}" Width="70" FontFamily="Consolas,monospace" FontWeight="SemiBold"
+                       Foreground="{Binding Kind, Converter={StaticResource KindBrush}}" />
+            <TextBlock Text="{Binding Message}" FontFamily="Consolas,monospace" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
 </UserControl>
