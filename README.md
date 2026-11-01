@@ -6,7 +6,7 @@
 
 Keeps your Windows PC awake and your status available while you're away — light, private, no admin required.
 
-> 🚧 **Under development.** The keep-awake engine and a developer console are working; the desktop app (tray, settings UI) is next. See the [roadmap](#roadmap).
+> 🚧 **Under development.** The keep-awake engine, a developer console and the desktop app (tray, tabs, themes, English and Portuguese) are working; the installer and portable builds are next. See the [roadmap](#roadmap).
 
 ## Build from source
 
@@ -36,6 +36,20 @@ dotnet publish tools/GapMouse.DevConsole -c Release -r win-x64 -o artifacts/devc
 
 Flags: `--idle <s>`, `--check <s>`, `--min <s>`, `--max <s>`, `--amplitude <px>`, `--display on|off`. Keys: `p` pause, `t` pause for 1 minute, `r` resume, `q` quit (Ctrl+C also exits cleanly).
 
+## Using GapMouse
+
+Run the desktop app with `dotnet run --project src/GapMouse.App`. It lives in the notification area (tray).
+
+- **Tray icon color:** blue while waiting, green while moving the mouse, amber while paused. The tooltip shows the state.
+- **Tray menu (right click):** `Pause` (10 min, 30 min, 1 h, Custom, Never) or `Resume` when paused, then `Open` and `Exit`. Double-click opens the window.
+- **Hotkey:** `Ctrl+Alt+P` toggles between pause (never) and resume. You can change it in Settings.
+- **Close to tray:** the window's close button hides it; the app keeps running. The first time, a balloon tells you so. Quit with `Exit` in the tray menu or `Exit application` on the Home tab.
+- **Start minimized:** start with `--minimized`, or turn on "Start minimized" in Settings, to show only the tray icon. "Start with Windows" registers the app with `--minimized`.
+- **Single instance:** launching a second copy brings the running window to the front and exits.
+- **Tabs:** Home (state, today's stats, pause and resume), Logs (live activity log with filter, copy and open folder), Settings (engine, startup, theme, language, hotkey, logs) and About (version, update check, paths).
+
+Theme (dark or light) and language (English or Portuguese, or follow Windows) change immediately, with no restart. Screenshots and a demo GIF arrive with the distribution plan.
+
 ## Architecture
 
 Clean Architecture with a functional core:
@@ -43,6 +57,8 @@ Clean Architecture with a functional core:
 - `GapMouse.Domain` — pure logic: the `KeepAwakeEngine` state machine, movement planning, settings validation. No I/O.
 - `GapMouse.Application` — ports and `EngineHost`, which runs the engine on a dedicated thread. Engine ports: cursor, idle time, monitor bounds, power requests. Persistence and system ports: settings store, app state store, activity log, startup registrar (start with Windows), release source (update check).
 - `GapMouse.Infrastructure` — Win32 adapters for the engine ports, plus file, registry and GitHub implementations of the persistence and system ports.
+- `GapMouse.Infrastructure/Shell` — the Windows shell integration: a hidden shell window, the tray icon with balloons, the global hotkey and the single-instance guard (see ADR 0006).
+- `GapMouse.App` — the Avalonia desktop app: views, view models (no Avalonia references), localization, UI services and the composition root. It runs on Avalonia's UI thread and is published with Native AOT.
 
 Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/). The original PowerShell script lives in [`legacy/`](legacy/).
 
@@ -61,15 +77,15 @@ Portable mode is on when a file named `portable` (no extension) or `GapMouse.set
 - `GapMouse.state.json`: today's counters (moving time and activations).
 - `gapmouse-yyyy-MM-dd.log`: one activity log per day, kept for 7 days by default (configurable, 1 to 365). With N days, a file is deleted when the date in its name is earlier than today minus N, so N = 7 keeps today plus the 7 previous days.
 
-The only network call is the optional update check: a `GET` to `https://api.github.com/repos/Gustavo-Piccoli/GapMouse/releases/latest` at start and then every 24 hours. It never downloads or installs anything. Turn it off by setting `"checkForUpdates": false` in the `system` section of the settings file (a settings screen arrives with the desktop app).
+The only network call is the optional update check: a `GET` to `https://api.github.com/repos/Gustavo-Piccoli/GapMouse/releases/latest` at start and then every 24 hours. It never downloads or installs anything. Turn it off by setting `"checkForUpdates": false` in the `system` section of the settings file (or untick it in the Settings tab).
 
 The developer console always keeps its data next to its own exe.
 
 ## Roadmap
 
 1. Foundation and headless engine.
-2. Persistence and system integration (current).
-3. Avalonia desktop app: tray, tabs, themes, i18n.
+2. Persistence and system integration.
+3. Avalonia desktop app: tray, tabs, themes, i18n (current).
 4. Distribution: installer, portable build, winget.
 
 ## Disclaimer

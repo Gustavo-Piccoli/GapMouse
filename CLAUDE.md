@@ -6,13 +6,13 @@ Este arquivo orienta o Claude Code (claude.ai/code) ao trabalhar neste repositó
 
 GapMouse é um utilitário .NET 10 para Windows que mantém o PC ativo (evita bloqueio de tela e suspensão) movendo o mouse quando o usuário está ocioso. É a reescrita do script PowerShell original, que continua em `legacy/` (`MOUSE.ps1`, `MOUSE.bat`) apenas como referência.
 
-Estado atual: Plano 2 (persistência de configurações e estado, logs em arquivo, início com o Windows, verificação de atualização; o app ainda é só o console de desenvolvimento). Roadmap: Plano 3 app desktop Avalonia (bandeja, abas, temas, i18n); Plano 4 distribuição (instalador, portátil, winget).
+Estado atual: Plano 3 (app desktop Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 4 distribuição (instalador, portátil, winget).
 
 ## Documentação
 
 - Spec: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`
 - Planos: `docs/superpowers/plans/`
-- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco)
+- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco, 0006 integração com o shell do Windows)
 
 ## Projetos e responsabilidades
 
@@ -25,6 +25,13 @@ Estado atual: Plano 2 (persistência de configurações e estado, logs em arquiv
   - `Startup/` — `IStartupRegistrar` e `StartWithWindowsService`;
   - `Updates/` — `IReleaseSource` e `UpdateService`.
 - `src/GapMouse.Infrastructure` — adaptadores Win32 em `Win32/`, fonte de aleatoriedade e implementações das portas do Plano 2: `Settings/` e `State/` (JSON com geração de código), `Logging/` (`FileActivityLog`), `Startup/` (chave Run do registro) e `Updates/` (`GitHubReleaseSource`).
+  - `Shell/` — integração com o shell: `ShellWindow` (janela de nível superior oculta), `Win32TrayIcon` (ícone e balões), `Win32GlobalHotkey` e `SingleInstance` (mutex + mensagem de ativação).
+- `src/GapMouse.App` — app desktop Avalonia 12 (Native AOT, `GapMouse.exe`):
+  - `Views/` e `ViewModels/` — telas e view models; os view models **não** referenciam Avalonia (namespaces `GapMouse.App.ViewModels*` e `GapMouse.App.Localization`);
+  - `Localization/` — `Localizer` com um arquivo parcial por área;
+  - `Services/` — portas de UI e adaptadores Avalonia, `AppShutdown`, `MainWindowService`, `ThemeApplier`;
+  - `Composition/` — `AppComposition.Build` (raiz de composição, só fábricas singleton explícitas, seguras para AOT);
+  - `StartupOptions` — argumentos de linha de comando (`--minimized`).
 - `tools/GapMouse.DevConsole` — console Native AOT só para desenvolvedores (não é distribuído). Guarda configurações, estado (`GapMouse.state.json`) e logs (`logs/`) ao lado do próprio exe (modo portátil fixo), nunca no perfil do usuário. Flags: `--idle`, `--check`, `--min`, `--max`, `--amplitude`, `--display on|off` (padrões de `EngineSettings.Default`: 120/1/10/25/120/on; flag inválida sai com código 2). Teclas: `p` pausa, `t` pausa de 1 min, `r` retoma, `q` sai; Ctrl+C encerra liberando a energia.
 - `tests/` — `*.Tests` por camada, `GapMouse.Architecture.Tests` (regras de dependência entre camadas) e `GapMouse.Testing` (biblioteca com dublês de teste compartilhados).
 
@@ -45,6 +52,11 @@ Estado atual: Plano 2 (persistência de configurações e estado, logs em arquiv
 - O DevConsole nunca grava a chave Run do registro (`StartWithWindowsService` não é ligado nele).
 - Retenção de logs: um arquivo é apagado quando a data no nome é anterior a hoje − N; com N = 7 ficam hoje e os 7 dias anteriores.
 - Para quem compuser o app (Plano 3): descarte na ordem host → `AppStatePersister` → `ActivityLogWriter` → `UpdateService` → `HttpClient` (o persister lê o snapshot, publicado depois que os eventos são disparados). Não salve as configurações após um carregamento que não conseguiu ler o arquivo (`FileExisted=true` com aviso de leitura), senão os padrões sobrescrevem o arquivo do usuário. `UpdateFound` e `EventRaised` disparam fora da thread de UI.
+- A janela do shell (`ShellWindow`) roda na mesma thread e no loop de mensagens do Avalonia (thread de UI); não há thread de mensagens separada. Eventos do motor e de atualização chegam aos view models só via `IUiDispatcher`, e todo `Save` de configurações fica na thread de UI.
+- Localização: cada texto é `T("English", "Português")` no arquivo parcial `Localizer.<Área>.cs`; o idioma troca ao vivo. Tags de log (START…ERROR) e mensagens em disco ficam em inglês.
+- `--minimized` (ou `StartMinimized`) inicia só com a bandeja, sem janela. O registro de "iniciar com o Windows" usa `--minimized`.
+- A instância única bloqueia um segundo `dotnet run` enquanto o app estiver aberto: a segunda execução só ativa a janela existente e sai com código 0.
+- O encerramento passa sempre por `AppShutdown.Exit()` (uma vez, na ordem do ADR 0006); a janela principal só esconde ao fechar (`MainWindowService`).
 - O `.gitignore` padrão ignora pastas `Win32/`; há negações (`!src/**/Win32/`, `!tests/**/Win32/`). Ao criar pastas `Win32/` fora de `src/` e `tests/`, ou se arquivos "sumirem" do `git status`, verifique isso.
 
 ## Build e testes
@@ -54,6 +66,7 @@ dotnet build
 dotnet test                                              # tudo, incluindo testes Win32 reais
 dotnet test --filter-not-trait "Category=Win32"          # como no CI
 dotnet format --verify-no-changes
+dotnet run --project src/GapMouse.App                  # app desktop (use -- --minimized para só a bandeja)
 dotnet run --project tools/GapMouse.DevConsole -- --idle 10 --min 3 --max 5
 dotnet publish tools/GapMouse.DevConsole -c Release -r win-x64 -o artifacts/devconsole
 ```
