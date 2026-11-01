@@ -1,0 +1,62 @@
+using static GapMouse.Infrastructure.Shell.ShellNativeMethods;
+
+namespace GapMouse.Infrastructure.Shell;
+
+/// <summary>Per-session single-instance guard backed by a named mutex.</summary>
+public sealed class SingleInstance : IDisposable
+{
+    private Mutex? _mutex;
+
+    private SingleInstance(Mutex mutex) => _mutex = mutex;
+
+    /// <summary>Returns the guard, or null when another holder exists.</summary>
+    public static SingleInstance? TryAcquire(string name = @"Local\GapMouse.SingleInstance")
+    {
+        var mutex = new Mutex(true, name, out var createdNew);
+        if (!createdNew)
+        {
+            mutex.Dispose();
+            return null;
+        }
+
+        return new SingleInstance(mutex);
+    }
+
+    /// <summary>Asks the running instance to show its window; false when no shell window was found.</summary>
+    public static bool SignalExisting()
+    {
+        var hwnd = FindWindowW(ShellWindow.ClassName, null);
+        if (hwnd == 0)
+        {
+            return false;
+        }
+
+        if (GetWindowThreadProcessId(hwnd, out var pid) != 0)
+        {
+            AllowSetForegroundWindow(pid);
+        }
+
+        PostMessageW(hwnd, ShellWindow.ActivateMessage, 0, 0);
+        return true;
+    }
+
+    public void Dispose()
+    {
+        var mutex = Interlocked.Exchange(ref _mutex, null);
+        if (mutex is null)
+        {
+            return;
+        }
+
+        try
+        {
+            mutex.ReleaseMutex();
+        }
+        catch (ApplicationException)
+        {
+            // Released from a different thread than the one that acquired it; closing the handle suffices.
+        }
+
+        mutex.Dispose();
+    }
+}
