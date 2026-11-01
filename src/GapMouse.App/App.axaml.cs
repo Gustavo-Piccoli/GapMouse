@@ -23,7 +23,13 @@ public sealed class App : Avalonia.Application
                 DataContext = new MainWindowViewModel(
                     localizer,
                     new HomeViewModel(localizer, null!, null!, TimeProvider.System, null!, null!),
-                    new LogsViewModel(localizer),
+                    new LogsViewModel(
+                        localizer,
+                        new GapMouse.Application.Logging.InMemoryActivityLog(),
+                        new Services.AvaloniaUiDispatcher(),
+                        new Services.AvaloniaClipboardService(() => null),
+                        new Services.ShellLauncher(),
+                        string.Empty),
                     new SettingsViewModel(localizer, new PlaceholderSettingsService()),
                     new AboutViewModel(
                         localizer,
