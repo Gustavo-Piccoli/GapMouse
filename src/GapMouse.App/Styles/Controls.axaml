@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GapMouse.App.ViewModels">
   <Style Selector="TextBlock.title">
     <Setter Property="FontSize" Value="20" />
     <Setter Property="FontWeight" Value="SemiBold" />
@@ -34,5 +35,74 @@
   <Style Selector="Grid.row">
     <Setter Property="Margin" Value="16,12" />
     <Setter Property="MinHeight" Value="44" />
+  </Style>
+  <Style Selector="TabControl.rail">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Background" Value="{DynamicResource GmGroundBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="184,*" Background="{TemplateBinding Background}">
+          <Border Grid.Column="0" Background="{DynamicResource GmRailBrush}">
+            <DockPanel LastChildFill="True">
+              <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="16,18,16,14">
+                <Image Source="avares://GapMouse/Assets/Icons/gapmouse.ico" Width="20" Height="20" />
+                <TextBlock x:DataType="vm:MainWindowViewModel" Text="{Binding L.AppName}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              </StackPanel>
+              <ItemsPresenter Name="PART_ItemsPresenter" Margin="8,0" ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </DockPanel>
+          </Border>
+          <ContentPresenter Grid.Column="1" Name="PART_SelectedContentHost"
+                            Background="{DynamicResource GmGroundBrush}"
+                            Content="{TemplateBinding SelectedContent}"
+                            ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl.rail > TabItem">
+    <Setter Property="Height" Value="40" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Margin" Value="0,0,0,2" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource GmTextBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot" Background="Transparent" BorderBrush="Transparent"
+                BorderThickness="2" CornerRadius="{DynamicResource GmControlRadius}">
+          <Grid ColumnDefinitions="8,*">
+            <Border Name="PART_Indicator" Width="3" Height="16" Margin="4,0,0,0"
+                    CornerRadius="1.5" Background="{DynamicResource GmAccentBrush}"
+                    VerticalAlignment="Center" IsVisible="False" />
+            <ContentPresenter Grid.Column="1" Name="PART_ContentPresenter" Margin="10,0,8,0"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              Foreground="{TemplateBinding Foreground}"
+                              VerticalContentAlignment="Center" />
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="TabControl.rail > TabItem:pointerover /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource GmSurfaceHoverBrush}" />
+  </Style>
+  <Style Selector="TabControl.rail > TabItem:selected /template/ Border#PART_LayoutRoot">
+    <Setter Property="Background" Value="{DynamicResource GmSurfaceHoverBrush}" />
+  </Style>
+  <Style Selector="TabControl.rail > TabItem:selected /template/ Border#PART_Indicator">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+  <Style Selector="TabControl.rail > TabItem:focus-visible /template/ Border#PART_LayoutRoot">
+    <Setter Property="BorderBrush" Value="{DynamicResource GmTextBrush}" />
+  </Style>
+  <Style Selector="TextBlock.railIcon">
+    <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="Width" Value="20" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
   </Style>
 </Styles>

@@ -8,17 +8,41 @@
         Icon="avares://GapMouse/Assets/Icons/gapmouse.ico"
         Width="760" Height="600"
         MinWidth="640" MinHeight="520">
-  <TabControl>
-    <TabItem Header="{Binding L.TabHome}">
+  <TabControl Classes="rail" TabStripPlacement="Left">
+    <TabItem AutomationProperties.Name="{Binding L.TabHome}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Classes="railIcon" Text="&#xE80F;" />
+          <TextBlock Text="{Binding L.TabHome}" VerticalAlignment="Center" />
+        </StackPanel>
+      </TabItem.Header>
       <views:HomeView DataContext="{Binding Home}" />
     </TabItem>
-    <TabItem Header="{Binding L.TabLogs}">
+    <TabItem AutomationProperties.Name="{Binding L.TabLogs}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Classes="railIcon" Text="&#xE9F9;" />
+          <TextBlock Text="{Binding L.TabLogs}" VerticalAlignment="Center" />
+        </StackPanel>
+      </TabItem.Header>
       <views:LogsView DataContext="{Binding Logs}" />
     </TabItem>
-    <TabItem Header="{Binding L.TabSettings}">
+    <TabItem AutomationProperties.Name="{Binding L.TabSettings}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Classes="railIcon" Text="&#xE713;" />
+          <TextBlock Text="{Binding L.TabSettings}" VerticalAlignment="Center" />
+        </StackPanel>
+      </TabItem.Header>
       <views:SettingsView DataContext="{Binding Settings}" />
     </TabItem>
-    <TabItem Header="{Binding L.TabAbout}">
+    <TabItem AutomationProperties.Name="{Binding L.TabAbout}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBlock Classes="railIcon" Text="&#xE946;" />
+          <TextBlock Text="{Binding L.TabAbout}" VerticalAlignment="Center" />
+        </StackPanel>
+      </TabItem.Header>
       <views:AboutView DataContext="{Binding About}" />
     </TabItem>
   </TabControl>
