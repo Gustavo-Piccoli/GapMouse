@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-01T00:00:00Z",
+  "title": "Design System: GapMouse",
+  "extensions": {
+    "colorMeta": {
+      "cobalt-waiting": {"role": "primary", "displayName": "Cobalt (waiting)", "canonical": "#2F5FD0", "tonalRamp": ["#0B1A3F", "#122C6E", "#1B43A0", "#2F5FD0", "#5D86E0", "#8FADEB", "#C4D4F6", "#EDF2FD"]},
+      "hanger-green-moving": {"role": "secondary", "displayName": "Hanger Green (moving)", "canonical": "#157545", "tonalRamp": ["#06210F", "#0B3D22", "#115A34", "#157545", "#3C9A6B", "#72BC94", "#B2DCC6", "#E8F6EE"]},
+      "amber-paused": {"role": "tertiary", "displayName": "Amber (paused)", "canonical": "#E3A21A", "tonalRamp": ["#1F1503", "#4A3407", "#7C5A0D", "#B08014", "#E3A21A", "#EDBD58", "#F5D898", "#FDF4DE"]},
+      "ground-dark": {"role": "neutral", "displayName": "Tinted Charcoal Ground", "canonical": "#14161B", "tonalRamp": ["#0F1115", "#14161B", "#1B1E25", "#232731", "#2C313C", "#576070", "#A0A8B6", "#ECEEF2"]},
+      "rail-dark": {"role": "neutral", "displayName": "Card-Stock Rail", "canonical": "#0F1115", "tonalRamp": ["#0F1115", "#14161B", "#1B1E25", "#232731", "#2C313C", "#576070", "#A0A8B6", "#ECEEF2"]},
+      "ground-light": {"role": "neutral", "displayName": "Light Ground", "canonical": "#F4F5F7", "tonalRamp": ["#16181D", "#576070", "#A0A8B6", "#D8DCE3", "#E6E9F0", "#EEF0F4", "#F4F5F7", "#FFFFFF"]}
+    },
+    "typographyMeta": {
+      "state-word": {"displayName": "State word", "purpose": "The one loud word on the hanger face, bold caps."},
+      "group": {"displayName": "Group", "purpose": "Card titles and settings group headings."},
+      "log-tag": {"displayName": "Log tag", "purpose": "Stamped fixed-width tag text in the log."}
+    },
+    "shadows": [],
+    "motion": [
+      {"name": "face-flip", "value": "ScaleX 0.3 to 1, 220ms, CubicEaseOut", "purpose": "Hanger face turns over when the state changes; the only animation."}
+    ],
+    "breakpoints": [
+      {"name": "home-narrow", "value": "460px container width (face 220px to 176px)"},
+      {"name": "window-min", "value": "640x520"}
+    ]
+  },
+  "components": [
+    {
+      "name": "Hanger Face (moving)",
+      "kind": "custom",
+      "refersTo": "hanger-face-moving",
+      "description": "State-coloured full-height card with the knob-hole ring and the state word.",
+      "html": "<div class=\"ds-face\"><div class=\"ds-knob\"></div><div><div class=\"ds-word\">MOVING</div><div class=\"ds-sub\">Idle for 120 s of 120 s</div></div></div>",
+      "css": ".ds-face{width:220px;height:260px;box-sizing:border-box;padding:16px;border-radius:12px;background:#157545;color:#FFFFFF;display:flex;flex-direction:column;justify-content:space-between;font-family:'Segoe UI Variable Text','Segoe UI',sans-serif}.ds-knob{width:44px;height:44px;border-radius:50%;border:6px solid #FFFFFF;background:#14161B;align-self:center}.ds-word{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:30px;font-weight:700;letter-spacing:0.6px}.ds-sub{font-size:14px;color:#D3F5E2;margin-top:4px}"
+    },
+    {
+      "name": "Hanger Face (paused)",
+      "kind": "custom",
+      "refersTo": "hanger-face-paused",
+      "description": "Amber face with dark ink.",
+      "html": "<div class=\"ds-face-p\"><div class=\"ds-word-p\">PAUSED</div><div class=\"ds-sub-p\">Resumes in 9 min</div></div>",
+      "css": ".ds-face-p{width:220px;height:120px;box-sizing:border-box;padding:16px;border-radius:12px;background:#E3A21A;color:#1F1503;display:flex;flex-direction:column;justify-content:flex-end;font-family:'Segoe UI Variable Text','Segoe UI',sans-serif}.ds-word-p{font-family:'Segoe UI Variable Display','Segoe UI',sans-serif;font-size:30px;font-weight:700;letter-spacing:0.6px}.ds-sub-p{font-size:14px;color:#4A3407;margin-top:4px}"
+    },
+    {
+      "name": "Accent Button",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "The single primary action per view.",
+      "html": "<button class=\"ds-btn\">Pause</button>",
+      "css": ".ds-btn{background:#2F6FED;color:#FFFFFF;border:1px solid transparent;border-radius:6px;padding:5px 12px;font:14px 'Segoe UI Variable Text','Segoe UI',sans-serif}.ds-btn:hover{opacity:.9}.ds-btn:active{opacity:.8}.ds-btn:focus-visible{outline:2px solid #ECEEF2;outline-offset:2px}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Low-emphasis action such as Exit.",
+      "html": "<button class=\"ds-quiet\">Exit application</button>",
+      "css": ".ds-quiet{background:transparent;color:#A0A8B6;border:1px solid transparent;border-radius:6px;padding:5px 12px;font:14px 'Segoe UI Variable Text','Segoe UI',sans-serif}.ds-quiet:hover{background:#232731}.ds-quiet:focus-visible{outline:2px solid #ECEEF2}"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Surface card with aligned label/value rows and hairline dividers.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-g\">Today</div><div class=\"ds-r\"><span>Active time</span><b>1:12:30</b></div><div class=\"ds-d\"></div><div class=\"ds-r\"><span>Activations</span><b>9</b></div></div>",
+      "css": ".ds-card{width:290px;background:#1B1E25;border:1px solid #2C313C;border-radius:12px;color:#ECEEF2;font:14px 'Segoe UI Variable Text','Segoe UI',sans-serif}.ds-g{font-size:16px;font-weight:600;padding:12px 16px 4px}.ds-r{display:flex;justify-content:space-between;align-items:center;min-height:32px;padding:6px 16px;box-sizing:border-box}.ds-r span{color:#A0A8B6}.ds-r b{font-weight:600;font-variant-numeric:tabular-nums}.ds-d{height:1px;background:#2C313C}"
+    },
+    {
+      "name": "Rail Item",
+      "kind": "nav",
+      "refersTo": "rail-item",
+      "description": "Navigation rail entry; selected shows the cobalt pill.",
+      "html": "<div class=\"ds-rail\"><div class=\"ds-item sel\"><i></i>Home</div><div class=\"ds-item\"><i></i>Logs</div></div>",
+      "css": ".ds-rail{width:184px;background:#0F1115;padding:8px;box-sizing:border-box;font:14px 'Segoe UI Variable Text','Segoe UI',sans-serif;color:#ECEEF2}.ds-item{height:40px;display:flex;align-items:center;gap:10px;border-radius:6px;margin-bottom:2px;padding-left:8px;box-sizing:border-box}.ds-item i{width:3px;height:16px;border-radius:1.5px;background:transparent}.ds-item.sel{background:#232731}.ds-item.sel i{background:#2F6FED}.ds-item:hover{background:#232731}"
+    },
+    {
+      "name": "Log Row with Tag",
+      "kind": "chip",
+      "refersTo": "log-tag",
+      "description": "Mono timestamp, stamped fixed-width tag, message.",
+      "html": "<div class=\"ds-log\"><span class=\"t\">14:30:02</span><span class=\"tag\">MOVING</span><span>Moved cursor to 812, 440</span></div>",
+      "css": ".ds-log{display:grid;grid-template-columns:auto 76px 1fr;column-gap:10px;padding:4px 6px;color:#ECEEF2;font:14px 'Segoe UI Variable Text','Segoe UI',sans-serif}.ds-log .t{font-family:'Cascadia Mono',Consolas,monospace;font-variant-numeric:tabular-nums;color:#A0A8B6}.ds-log .tag{background:#157545;color:#FFFFFF;border-radius:6px;padding:2px 0;text-align:center;font-size:11px;font-weight:600}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Door Hanger",
+    "overview": "GapMouse is the door hanger on your desk: one face, one word, readable from across the room, turned over when the state changes. The window is opened from the tray for a few seconds to confirm the app is doing its job, so the first thing seen is a full-height card in the colour of the current state with the state word in bold caps. Everything else is quiet instrument-panel reading on a tinted charcoal ground.\n\nThe voice is calm, legible and native to Windows: Segoe UI Variable throughout, rank by weight and case inside one tight scale, one corner radius family and one hairline weight on every surface. Precision and restraint (Operate mode). The system rejects one thing outright: a grey Fluent tab strip with a status dot and a form.",
+    "keyCharacteristics": [
+      "Three committed state fields (cobalt, green, amber), each with its own ink; the hanger face is the only large colour on screen.",
+      "Flat, tonal layering: ground, card-stock rail, surface cards separated by hairlines, never shadows.",
+      "Live values sit in fixed cells with tabular numerals so nothing jitters.",
+      "Stamped and steady: fixed-width log tags, a single short flip as the only motion.",
+      "Dark and light themes with the same structure; state fields and log tag fills are identical in both."
+    ],
+    "rules": [
+      {"name": "The Committed State Rule", "body": "A state owns a whole field of colour with its own paired ink; never a dot, badge or tint of it. Colour on the face is state, nowhere else.", "section": "colors"},
+      {"name": "The Ink Pairing Rule", "body": "Text on a state field uses that state's ink tokens (primary and secondary), not the theme text colours. Amber is the only dark-ink field.", "section": "colors"},
+      {"name": "The Fixed Tag Table Rule", "body": "Log tag colours are a fixed table identical in both themes. White ink except on amber.", "section": "colors"},
+      {"name": "The Tabular Cell Rule", "body": "Any value that changes while the window is open uses tabular numerals in a fixed, right-aligned cell.", "section": "typography"},
+      {"name": "The Weight-and-Case Rank Rule", "body": "Rank is carried by weight and case inside the 11-12-14-16-20-30 scale; do not add sizes or a second family.", "section": "typography"},
+      {"name": "The Flat-Always Rule", "body": "No drop shadows, glows or blur. Separate with tone and the single hairline.", "section": "elevation"}
+    ],
+    "dos": [
+      "Do give each state its whole face: cobalt #2F5FD0, green #157545, amber #E3A21A with their paired inks.",
+      "Do use 12px for cards and the face, 6px for controls and tags, and the 1px hairline for every edge.",
+      "Do put changing numbers in tabular, right-aligned cells.",
+      "Do keep one accent button per view and everything else default or quiet.",
+      "Do keep state and tag fills identical across light and dark; only the neutrals change.",
+      "Do keep log tags and on-disk log words in English tags at a fixed 76px width."
+    ],
+    "donts": [
+      "Don't build the category default: a grey Fluent tab strip with a status dot and a form.",
+      "Don't use shadows, glows or blur for depth.",
+      "Don't signal state with a dot, badge or tint; use the face field and its word.",
+      "Don't add a second typeface, extra type sizes, or a second corner radius family.",
+      "Don't put theme text colours on a state field; use the state's ink tokens.",
+      "Don't animate anything except the face flip (0.22s ease-out)."
+    ]
+  }
+}
