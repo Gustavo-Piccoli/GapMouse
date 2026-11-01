@@ -18,7 +18,7 @@
     },
     "shadows": [],
     "motion": [
-      {"name": "face-flip", "value": "ScaleX 0.3 to 1, 220ms, CubicEaseOut", "purpose": "Hanger face turns over when the state changes; the only animation."}
+      {"name": "face-flip", "value": "ScaleX 0.3 to 1, 220ms, CubicEaseOut", "purpose": "Hanger face turns over when the state changes (also replays when Home is shown again); the only animation."}
     ],
     "breakpoints": [
       {"name": "home-narrow", "value": "460px container width (face 220px to 176px)"},
