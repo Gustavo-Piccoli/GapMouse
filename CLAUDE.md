@@ -6,13 +6,14 @@ Este arquivo orienta o Claude Code (claude.ai/code) ao trabalhar neste repositó
 
 GapMouse é um utilitário .NET 10 para Windows que mantém o PC ativo (evita bloqueio de tela e suspensão) movendo o mouse quando o usuário está ocioso. É a reescrita do script PowerShell original, que continua em `legacy/` (`MOUSE.ps1`, `MOUSE.bat`) apenas como referência.
 
-Estado atual: Plano 4 (distribuição: instalador Inno Setup por usuário, zip portátil, checksums, pipeline de release x64 + ARM64 e release-please), sobre o app desktop do Plano 3 (Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 5 pós-v1 (envio ao winget, assinatura de código).
+Estado atual: v1.1 (refresh visual: navegação em trilho lateral, face da Home em formato de "door hanger" com cores por estado, temas claro/escuro baseados em tokens) sobre o Plano 4 (distribuição: instalador Inno Setup por usuário, zip portátil, checksums, pipeline de release x64 + ARM64 e release-please), sobre o app desktop do Plano 3 (Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 5 pós-v1 (envio ao winget, assinatura de código).
 
 ## Documentação
 
 - Spec: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`
 - Planos: `docs/superpowers/plans/`
 - ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco, 0006 integração com o shell do Windows, 0007 distribuição e pipeline de release)
+- Design: `PRODUCT.md` (produto, público, tom) e `DESIGN.md` (sistema de design, com `.impeccable/design.json`) na raiz
 
 ## Projetos e responsabilidades
 
@@ -28,11 +29,13 @@ Estado atual: Plano 4 (distribuição: instalador Inno Setup por usuário, zip p
   - `Shell/` — integração com o shell: `ShellWindow` (janela de nível superior oculta), `Win32TrayIcon` (ícone e balões), `Win32GlobalHotkey` e `SingleInstance` (mutex + mensagem de ativação).
 - `src/GapMouse.App` — app desktop Avalonia 12 (Native AOT, `GapMouse.exe`):
   - `Views/` e `ViewModels/` — telas e view models; os view models **não** referenciam Avalonia (namespaces `GapMouse.App.ViewModels*` e `GapMouse.App.Localization`);
+  - `Styles/` — `Tokens.axaml` (tokens de tema `Gm…Brush`, tokens de estado, raios, fontes e overrides dos botões Fluent no tema claro) e `Controls.axaml` (classes de texto/card/linha, template do `TabControl` em trilho lateral, `DropDownButton` de destaque); conversores em `Views/` (`LogKindBrushConverter`, `LogKindInkConverter`, `ProgressToSweepConverter`, `UpperCaseConverter`);
   - `Localization/` — `Localizer` com um arquivo parcial por área;
   - `Services/` — portas de UI e adaptadores Avalonia, `AppShutdown`, `MainWindowService`, `ThemeApplier`;
   - `Composition/` — `AppComposition.Build` (raiz de composição, só fábricas singleton explícitas, seguras para AOT);
   - `StartupOptions` — argumentos de linha de comando (`--minimized`).
 - `tools/GapMouse.DevConsole` — console Native AOT só para desenvolvedores (não é distribuído). Guarda configurações, estado (`GapMouse.state.json`) e logs (`logs/`) ao lado do próprio exe (modo portátil fixo), nunca no perfil do usuário. Flags: `--idle`, `--check`, `--min`, `--max`, `--amplitude`, `--display on|off` (padrões de `EngineSettings.Default`: 120/1/10/25/120/on; flag inválida sai com código 2). Teclas: `p` pausa, `t` pausa de 1 min, `r` retoma, `q` sai; Ctrl+C encerra liberando a energia.
+- `tools/GapMouse.Screenshots` — Avalonia headless só para desenvolvedores (não é distribuído): renderiza todas as telas nos temas claro e escuro, em inglês e português, a 760×600 e 640×520, em `artifacts/screenshots/`. As imagens do README (`docs/images/`) vêm daqui.
 - `build/` — scripts PowerShell de empacotamento (rodam em Windows PowerShell 5.1 e pwsh 7; os `Test-*` servem como testes): `Publish-App.ps1` (publica em AOT um runtime, grava a versão e copia só `GapMouse.exe`, `*.dll` e `LICENSE.txt`), `New-PortableZip.ps1`, `New-Checksums.ps1`, `New-Installer.ps1` (localiza o `ISCC.exe`, nunca instala o Inno), `Test-Package.ps1`, `Test-Portable.ps1` (abre o exe com `--minimized` e exige a linha START no log) e `Test-Installer.ps1` (instalação e desinstalação silenciosas em 3 fases). Saída em `artifacts/` (ignorada pelo git).
 - `installer/GapMouse.iss` — Inno Setup 6, por usuário (`{autopf}\GapMouse`), `AppMutex=GapMouse.SingleInstance`, tarefa opcional "Iniciar com o Windows" (desmarcada), inglês e português do Brasil; a desinstalação só apaga o valor Run se ele apontar para o próprio exe.
 - `tests/` — `*.Tests` por camada, `GapMouse.Architecture.Tests` (regras de dependência entre camadas) e `GapMouse.Testing` (biblioteca com dublês de teste compartilhados).
@@ -74,6 +77,7 @@ dotnet test --filter-not-trait "Category=Win32"          # como no CI
 dotnet format --verify-no-changes
 dotnet run --project src/GapMouse.App                  # app desktop (use -- --minimized para só a bandeja)
 dotnet run --project tools/GapMouse.DevConsole -- --idle 10 --min 3 --max 5
+dotnet run --project tools/GapMouse.Screenshots        # gera os PNGs em artifacts/screenshots/
 dotnet publish tools/GapMouse.DevConsole -c Release -r win-x64 -o artifacts/devconsole
 ```
 
