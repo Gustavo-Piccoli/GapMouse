@@ -26,6 +26,19 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
         IClipboardService clipboard,
         IShellLauncher launcher,
         string logsDirectory)
+        : this(l, log, ui, clipboard, launcher, logsDirectory, null)
+    {
+    }
+
+    // afterSubscribe is a test hook that runs between subscribing and taking the snapshot.
+    internal LogsViewModel(
+        Localizer l,
+        InMemoryActivityLog log,
+        IUiDispatcher ui,
+        IClipboardService clipboard,
+        IShellLauncher launcher,
+        string logsDirectory,
+        Action? afterSubscribe)
         : base(l)
     {
         _log = log;
@@ -33,6 +46,10 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
         _clipboard = clipboard;
         _launcher = launcher;
         _logsDirectory = logsDirectory;
+
+        // Subscribe first so an entry appended meanwhile is never lost; the handler skips entries the snapshot already holds.
+        _log.EntryAdded += OnEntryAdded;
+        afterSubscribe?.Invoke();
         _entries = [.. log.GetEntries()];
 
         CopyCommand = new AsyncRelayCommand(CopyAsync);
@@ -40,7 +57,6 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
         ClearCommand = new RelayCommand(Clear);
 
         Rebuild();
-        _log.EntryAdded += OnEntryAdded;
         L.PropertyChanged += OnLocalizerChanged;
     }
 
@@ -100,6 +116,11 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        if (_entries.Any(x => ReferenceEquals(x, entry)))
+        {
+            return;
+        }
+
         _entries.Add(entry);
         if (_entries.Count > InMemoryActivityLog.Capacity)
         {
@@ -133,10 +154,19 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private Task CopyAsync()
+    private async Task CopyAsync()
     {
         var text = string.Join(Environment.NewLine, Lines.Select(x => $"{x.Time} | {x.Tag} | {x.Message}"));
-        return _clipboard.SetTextAsync(text);
+        try
+        {
+            await _clipboard.SetTextAsync(text);
+        }
+#pragma warning disable CA1031 // The clipboard can fail in many ways (COM, no top level); the UI must not crash.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            // Nothing useful to show here.
+        }
     }
 
     private void OpenFolder()
@@ -145,7 +175,9 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
         {
             _launcher.OpenFolder(_logsDirectory);
         }
-        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or IOException)
+#pragma warning disable CA1031 // The launcher can throw many types; the UI must not crash.
+        catch (Exception)
+#pragma warning restore CA1031
         {
             // No handler for the folder; nothing useful to show here.
         }
