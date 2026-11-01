@@ -1,7 +1,83 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GapMouse.App.ViewModels"
+             xmlns:svc="using:GapMouse.App.Services"
              x:Class="GapMouse.App.Views.HomeView"
              x:DataType="vm:HomeViewModel">
-  <TextBlock Text="Home" Margin="16" />
+  <UserControl.Styles>
+    <Style Selector="Ellipse.dot">
+      <Setter Property="Width" Value="18" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Fill" Value="#3B82F6" />
+    </Style>
+    <Style Selector="Ellipse.dot.moving">
+      <Setter Property="Fill" Value="#22C55E" />
+    </Style>
+    <Style Selector="Ellipse.dot.paused">
+      <Setter Property="Fill" Value="#F59E0B" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Opacity" Value="0.7" />
+    </Style>
+  </UserControl.Styles>
+
+  <StackPanel Margin="24" Spacing="16">
+    <StackPanel Orientation="Horizontal" Spacing="12">
+      <Ellipse Classes="dot"
+               Classes.moving="{Binding IsMoving}"
+               Classes.paused="{Binding IsPaused}" />
+      <TextBlock Text="{Binding StateText}" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" />
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="{Binding IdleText}" />
+      <ProgressBar Minimum="0" Maximum="1" Value="{Binding IdleProgress}" />
+      <TextBlock Text="{Binding PauseText}" IsVisible="{Binding HasPauseText}" />
+    </StackPanel>
+
+    <Grid ColumnDefinitions="Auto,16,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+      <TextBlock Grid.Row="0" Classes="label" Text="{Binding L.HomeStartedLabel}" />
+      <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding StartedText}" />
+      <TextBlock Grid.Row="1" Classes="label" Text="{Binding L.HomeLastMovementLabel}" />
+      <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding LastMovementText}" />
+      <TextBlock Grid.Row="2" Classes="label" Text="{Binding L.HomeLastReturnLabel}" />
+      <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding LastReturnText}" />
+      <TextBlock Grid.Row="3" Classes="label" Text="{Binding L.HomeLastPauseLabel}" />
+      <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding LastPauseText}" />
+      <TextBlock Grid.Row="4" Classes="label" Text="{Binding L.HomeLastResumeLabel}" />
+      <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding LastResumeText}" />
+    </Grid>
+
+    <StackPanel Spacing="4">
+      <TextBlock Text="{Binding L.HomeTodayTitle}" FontWeight="SemiBold" />
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Classes="label" Text="{Binding L.HomeActiveTimeLabel}" />
+        <TextBlock Text="{Binding TodayActiveTime}" />
+        <TextBlock Classes="label" Text="{Binding L.HomeActivationsLabel}" Margin="16,0,0,0" />
+        <TextBlock Text="{Binding TodayActivations}" />
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <DropDownButton Content="{Binding L.HomePause}" IsVisible="{Binding !IsPaused}">
+        <DropDownButton.Flyout>
+          <MenuFlyout>
+            <MenuItem Header="{Binding L.PauseTenMinutes}" Command="{Binding PauseCommand}"
+                      CommandParameter="{x:Static svc:PauseOption.TenMinutes}" />
+            <MenuItem Header="{Binding L.PauseThirtyMinutes}" Command="{Binding PauseCommand}"
+                      CommandParameter="{x:Static svc:PauseOption.ThirtyMinutes}" />
+            <MenuItem Header="{Binding L.PauseOneHour}" Command="{Binding PauseCommand}"
+                      CommandParameter="{x:Static svc:PauseOption.OneHour}" />
+            <MenuItem Header="{Binding L.PauseCustom}" Command="{Binding PauseCommand}"
+                      CommandParameter="{x:Static svc:PauseOption.Custom}" />
+            <MenuItem Header="{Binding L.PauseNever}" Command="{Binding PauseCommand}"
+                      CommandParameter="{x:Static svc:PauseOption.Never}" />
+          </MenuFlyout>
+        </DropDownButton.Flyout>
+      </DropDownButton>
+      <Button Content="{Binding L.HomeResume}" Command="{Binding ResumeCommand}" IsVisible="{Binding IsPaused}" />
+      <Button Content="{Binding L.HomeExit}" Command="{Binding ExitCommand}" />
+    </StackPanel>
+  </StackPanel>
 </UserControl>

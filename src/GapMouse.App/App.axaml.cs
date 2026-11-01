@@ -21,7 +21,7 @@ public sealed class App : Avalonia.Application
             {
                 DataContext = new MainWindowViewModel(
                     localizer,
-                    new HomeViewModel(localizer),
+                    new HomeViewModel(localizer, null!, null!, TimeProvider.System, null!, null!),
                     new LogsViewModel(localizer),
                     new SettingsViewModel(localizer),
                     new AboutViewModel(localizer)),
