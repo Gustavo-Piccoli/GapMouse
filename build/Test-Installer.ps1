@@ -124,13 +124,18 @@ try {
     $started = Start-Process -FilePath $exe -ArgumentList '--minimized' -PassThru
     Start-Sleep -Seconds 3
     Assert (-not $started.HasExited) 'installed app is still running after 3 s'
-    $before = (Get-Item -LiteralPath $exe).LastWriteTimeUtc
+    # Inno preserves source timestamps, so a sentinel is needed to detect an overwrite.
+    $sentinel = [DateTime]::SpecifyKind([DateTime]'2000-01-01T00:00:00', [DateTimeKind]::Utc)
+    (Get-Item -LiteralPath $exe).LastWriteTimeUtc = $sentinel
+    Assert ((Get-Item -LiteralPath $exe).LastWriteTimeUtc -eq $sentinel) 'sentinel timestamp applied to the running exe'
     $log = "$dir.install3b.log"
+    # The expected exit list is empty of real codes on purpose: Invoke-Install then prints the Inno log once.
     $code = Invoke-Install $dir $log '' @(-1)
     Write-Host "Second silent install while running exited with code $code"
-    Show-Log $log
     Assert ($code -ne 0) 'second install while the app runs exits non-zero'
-    Assert ((Get-Item -LiteralPath $exe).LastWriteTimeUtc -eq $before) 'GapMouse.exe unchanged by the blocked install'
+    $logText = Get-Content -LiteralPath $log -Raw
+    Assert ($logText -match 'is currently running') 'Inno log reports that the app is currently running'
+    Assert ((Get-Item -LiteralPath $exe).LastWriteTimeUtc -eq $sentinel) 'GapMouse.exe untouched (sentinel timestamp intact) by the blocked install'
     Stop-Process -Id $started.Id -Force
     $started.WaitForExit(10000) | Out-Null
     $started = $null
