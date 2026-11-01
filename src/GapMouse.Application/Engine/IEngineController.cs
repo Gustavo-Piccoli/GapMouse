@@ -23,4 +23,7 @@ public interface IEngineController
 
     /// <summary>Replaces the engine settings; takes effect within one loop iteration.</summary>
     void ApplySettings(EngineSettings settings);
+
+    /// <summary>Tells the engine whether the session is locked; takes effect within one loop iteration.</summary>
+    void SetSessionLocked(bool locked);
 }

@@ -35,6 +35,26 @@ public sealed class ActivityLoggerTests
     }
 
     [Fact]
+    public void Log_AppendsExceptionMessageWhenAbsent()
+    {
+        var logger = new ActivityLogger<ActivityLoggerTests>(_log, _time);
+
+        Write(logger, LogLevel.Warning, "Port Cursor failed: denied", new InvalidOperationException("Acesso negado."));
+
+        Assert.Equal("Port Cursor failed: denied: Acesso negado.", Assert.Single(_log.Entries).Message);
+    }
+
+    [Fact]
+    public void Log_DoesNotRepeatExceptionMessageAlreadyInText()
+    {
+        var logger = new ActivityLogger<ActivityLoggerTests>(_log, _time);
+
+        Write(logger, LogLevel.Warning, "Port Cursor failed: Acesso negado.", new InvalidOperationException("Acesso negado."));
+
+        Assert.Equal("Port Cursor failed: Acesso negado.", Assert.Single(_log.Entries).Message);
+    }
+
+    [Fact]
     public void LogInformation_DoesNotAppend()
     {
         var logger = new ActivityLogger<ActivityLoggerTests>(_log, _time);

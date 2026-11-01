@@ -215,8 +215,8 @@ public sealed class EngineHostTests : IDisposable
         _host.ApplySettings(EngineSettings.Default);
 
         SpinWait.SpinUntil(() => _power.Last == PowerRequest.KeepSystemAndDisplayAwake, Timeout).ShouldBeTrue();
-        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(1);
-        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
+        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(0);
+        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(2);
     }
 
     [Fact]
@@ -233,7 +233,6 @@ public sealed class EngineHostTests : IDisposable
 
         attempts.ShouldBeLessThan(200);
         _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
-        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(0);
         _power.Last.ShouldBe(PowerRequest.KeepSystemAndDisplayAwake);
         _host.Snapshot.State.ShouldBe(EngineState.Moving);
 
@@ -243,10 +242,9 @@ public sealed class EngineHostTests : IDisposable
         _host.Pause(PauseDuration.Indefinite);
         _host.Resume();
 
-        SpinWait.SpinUntil(() => _logger.Levels.Contains(LogLevel.Information), Timeout).ShouldBeTrue();
+        SpinWait.SpinUntil(() => _logger.Levels.Count(l => l == LogLevel.Warning) >= 2, Timeout).ShouldBeTrue();
         Thread.Sleep(200);
-        _logger.Levels.Count(l => l == LogLevel.Information).ShouldBe(1);
-        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(1);
+        _logger.Levels.Count(l => l == LogLevel.Warning).ShouldBe(2);
     }
 
     [Fact]

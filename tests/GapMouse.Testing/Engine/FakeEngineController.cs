@@ -26,6 +26,8 @@ public sealed class FakeEngineController : IEngineController
 
     public List<EngineSettings> ApplySettingsCalls { get; } = [];
 
+    public List<bool> SetSessionLockedCalls { get; } = [];
+
     public event EventHandler<EngineEventArgs>? EventRaised;
 
     public void Raise(EngineEvent e) => EventRaised?.Invoke(this, new EngineEventArgs(e));
@@ -35,4 +37,6 @@ public sealed class FakeEngineController : IEngineController
     public void Resume() => ResumeCalls++;
 
     public void ApplySettings(EngineSettings settings) => ApplySettingsCalls.Add(settings);
+
+    public void SetSessionLocked(bool locked) => SetSessionLockedCalls.Add(locked);
 }

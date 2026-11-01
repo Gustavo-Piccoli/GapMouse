@@ -18,6 +18,8 @@ public sealed record LogEntry(DateTimeOffset At, LogKind Kind, string Message, E
         LogKind.Stop => "STOP",
         LogKind.Warn => "WARN",
         LogKind.Error => "ERROR",
+        LogKind.Locked => "LOCKED",
+        LogKind.Unlocked => "UNLOCKED",
         _ => throw new ArgumentOutOfRangeException(nameof(Kind), Kind, null),
     };
 

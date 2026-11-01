@@ -113,6 +113,8 @@ public sealed partial class EngineHost : IEngineController, IDisposable
         Enqueue((engine, now) => engine.ApplySettings(settings, now));
     }
 
+    public void SetSessionLocked(bool locked) => Enqueue((engine, now) => engine.SetSessionLocked(locked, now));
+
     /// <summary>Signals the engine thread to stop, waits up to five seconds for it and releases the power request.</summary>
     public void Dispose()
     {
@@ -208,7 +210,14 @@ public sealed partial class EngineHost : IEngineController, IDisposable
         }
 
         var wait = engine.Settings.CheckInterval;
-        if (TryReadInput(out var input))
+        if (engine.IsSessionLocked)
+        {
+            // Locked: the desktop is unreachable, so read no ports and never move; only the power request follows the engine.
+            var step = engine.AdvanceLocked(_time.GetLocalNow());
+            wait = step.WaitBeforeNext;
+            ApplyPower(step.Power, ref applied);
+        }
+        else if (TryReadInput(out var input))
         {
             var step = engine.Advance(input);
             wait = step.WaitBeforeNext;
@@ -361,7 +370,7 @@ public sealed partial class EngineHost : IEngineController, IDisposable
     [LoggerMessage(Level = LogLevel.Warning, Message = "Port {Port} failed: {Reason}")]
     private partial void LogPortFailed(Exception? exception, Port port, string reason);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Port {Port} recovered")]
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Port {Port} recovered")]
     private partial void LogPortRecovered(Port port);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "An engine loop iteration failed; continuing")]

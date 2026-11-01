@@ -6,6 +6,8 @@ namespace GapMouse.Application.Tests.Fakes;
 internal sealed class FakeCursor : ICursorController
 {
     private int _setCount;
+    private int _getCount;
+    private int _throwOnGetOnce;
 
     private volatile bool _refuseSet;
 
@@ -20,7 +22,21 @@ internal sealed class FakeCursor : ICursorController
 
     public int SetCount => Volatile.Read(ref _setCount);
 
-    public PixelPoint GetPosition() => new(960, 540);
+    public int GetCount => Volatile.Read(ref _getCount);
+
+    /// <summary>Makes the next <see cref="GetPosition"/> call throw once.</summary>
+    public void ThrowOnNextGet() => Volatile.Write(ref _throwOnGetOnce, 1);
+
+    public PixelPoint GetPosition()
+    {
+        Interlocked.Increment(ref _getCount);
+        if (Interlocked.Exchange(ref _throwOnGetOnce, 0) == 1)
+        {
+            throw new InvalidOperationException("Acesso negado.");
+        }
+
+        return new(960, 540);
+    }
 
     public bool TrySetPosition(PixelPoint position)
     {

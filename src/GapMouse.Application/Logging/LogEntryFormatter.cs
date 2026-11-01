@@ -20,6 +20,9 @@ public static class LogEntryFormatter
             EngineResumed { Reason: ResumeReason.Manual } => new LogEntry(e.At, LogKind.Resumed, "Resumed (manual)"),
             EngineResumed => new LogEntry(e.At, LogKind.Resumed, "Resumed (pause expired)"),
             SettingsChanged => new LogEntry(e.At, LogKind.Config, "Settings changed"),
+            SessionLocked { KeepAwake: true } => new LogEntry(e.At, LogKind.Locked, "Screen locked; movement stopped, system kept awake"),
+            SessionLocked => new LogEntry(e.At, LogKind.Locked, "Screen locked; movement stopped, power released"),
+            SessionUnlocked => new LogEntry(e.At, LogKind.Unlocked, "Screen unlocked"),
             EngineStopped => new LogEntry(e.At, LogKind.Stop, "GapMouse stopped"),
             _ => throw new ArgumentOutOfRangeException(nameof(e), e.GetType().Name, "Unknown engine event."),
         };
