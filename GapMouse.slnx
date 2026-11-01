@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/GapMouse.DevConsole/GapMouse.DevConsole.csproj" />
+    <Project Path="tools/GapMouse.Screenshots/GapMouse.Screenshots.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GapMouse.App.Tests/GapMouse.App.Tests.csproj" />
