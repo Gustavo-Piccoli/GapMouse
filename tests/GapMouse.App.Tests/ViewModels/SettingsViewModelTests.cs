@@ -135,6 +135,137 @@ public sealed class SettingsViewModelTests
     }
 
     [Fact]
+    public void CaptureHotkey_NoModifier_IsIgnored()
+    {
+        var (vm, _) = Create();
+
+        vm.CaptureHotkey(HotkeyModifiers.None, "K");
+
+        vm.HotkeyText.ShouldBe("Ctrl+Alt+P");
+        vm.IsDirty.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void CaptureHotkey_ShiftOnly_IsIgnored()
+    {
+        var (vm, _) = Create();
+
+        vm.CaptureHotkey(HotkeyModifiers.Shift, "K");
+
+        vm.HotkeyText.ShouldBe("Ctrl+Alt+P");
+    }
+
+    [Theory]
+    [InlineData("Escape")]
+    [InlineData("")]
+    [InlineData("F25")]
+    [InlineData("KK")]
+    public void CaptureHotkey_InvalidKey_IsIgnored(string key)
+    {
+        var (vm, _) = Create();
+
+        vm.CaptureHotkey(HotkeyModifiers.Control, key);
+
+        vm.HotkeyText.ShouldBe("Ctrl+Alt+P");
+        vm.IsDirty.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("en-US", "1,5")]
+    [InlineData("en-US", "1.5")]
+    [InlineData("pt-BR", "1,5")]
+    [InlineData("pt-BR", "1.5")]
+    public void DecimalValue_IsRejectedInEveryNumericField(string culture, string text)
+    {
+        var l = new Localizer(() => new System.Globalization.CultureInfo(culture));
+        l.SetLanguage(culture == "pt-BR" ? UiLanguage.Portuguese : UiLanguage.English);
+        var (vm, service) = Create(l);
+
+        foreach (var set in Setters(vm))
+        {
+            set(text);
+        }
+
+        AllErrors(vm).ShouldAllBe(e => e != null);
+        vm.SaveCommand.Execute(null);
+        service.Saved.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void NegativeValue_ShowsRangeError()
+    {
+        var (vm, _) = Create();
+
+        vm.IdleText = "-5";
+        vm.RetentionText = "-1";
+
+        vm.IdleError.ShouldBe("Enter a value from 10 to 3600.");
+        vm.RetentionError.ShouldBe("Enter a value from 1 to 365.");
+    }
+
+    [Fact]
+    public void RetentionAboveMax_ShowsError()
+    {
+        var (vm, _) = Create();
+
+        vm.RetentionText = "366";
+
+        vm.RetentionError.ShouldBe("Enter a value from 1 to 365.");
+    }
+
+    [Fact]
+    public void EmptyHotkey_ShowsError()
+    {
+        var (vm, _) = Create();
+
+        vm.HotkeyText = string.Empty;
+
+        vm.HotkeyError.ShouldNotBeNull();
+        vm.SaveCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("abc")]
+    public void EmptyOrNonNumeric_ShowsErrorInEachNumericField(string text)
+    {
+        foreach (var index in Enumerable.Range(0, 6))
+        {
+            var (vm, _) = Create();
+
+            Setters(vm)[index](text);
+
+            AllErrors(vm)[index].ShouldBe("Enter a whole number.");
+            AllErrors(vm).Count(e => e != null).ShouldBe(1);
+        }
+    }
+
+    [Fact]
+    public void Save_InvalidForm_NeverCallsService()
+    {
+        var (vm, service) = Create();
+        vm.MinText = "30";
+
+        vm.SaveCommand.Execute(null);
+
+        service.Saved.ShouldBeEmpty();
+        vm.StatusMessage.ShouldBeNull();
+    }
+
+    private static Action<string>[] Setters(SettingsViewModel vm) =>
+    [
+        v => vm.IdleText = v,
+        v => vm.CheckText = v,
+        v => vm.MinText = v,
+        v => vm.MaxText = v,
+        v => vm.AmplitudeText = v,
+        v => vm.RetentionText = v,
+    ];
+
+    private static string?[] AllErrors(SettingsViewModel vm) =>
+        [vm.IdleError, vm.CheckError, vm.MinError, vm.MaxError, vm.AmplitudeError, vm.RetentionError];
+
+    [Fact]
     public void Save_ValidForm_CallsServiceWithParsedSettings()
     {
         var (vm, service) = Create();
