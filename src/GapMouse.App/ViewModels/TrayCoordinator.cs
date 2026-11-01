@@ -28,13 +28,16 @@ public sealed class TrayCoordinator(
 
     private readonly HashSet<Version> _announcedVersions = [];
     private EngineState _state;
+    private bool _promptOpen;
     private bool _started;
     private bool _disposed;
 
     public void Start()
     {
-        _state = engine.Snapshot.State;
+        // Subscribe before reading the snapshot so no event is lost; handlers run on the UI thread
+        // via ui.Post, so any event raised meanwhile is applied after this seed and is never older.
         engine.EventRaised += OnEngineEvent;
+        _state = engine.Snapshot.State;
         tray.MenuRequested += OnMenuRequested;
         tray.OpenRequested += OnOpenRequested;
         tray.BalloonClicked += OnBalloonClicked;
@@ -201,10 +204,27 @@ public sealed class TrayCoordinator(
 
     private async Task PauseCustomAsync()
     {
-        var minutes = await pausePrompt.AskMinutesAsync();
-        if (minutes is { } m)
+        if (_promptOpen)
         {
-            engine.Pause(PauseOptions.ToDuration(PauseOption.Custom, m));
+            return;
+        }
+
+        _promptOpen = true;
+        try
+        {
+            var minutes = await pausePrompt.AskMinutesAsync();
+            if (!_disposed && minutes is { } m)
+            {
+                engine.Pause(PauseOptions.ToDuration(PauseOption.Custom, m));
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // The coordinator has no logger; a failed prompt simply leaves the engine unpaused.
+        }
+        finally
+        {
+            _promptOpen = false;
         }
     }
 

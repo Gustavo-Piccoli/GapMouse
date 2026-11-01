@@ -312,6 +312,61 @@ public sealed class TrayCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void Start_WithPausedSnapshot_ShowsPausedIconAndResumeMenu()
+    {
+        _engine.Snapshot = _engine.Snapshot with { State = EngineState.Paused };
+        using var c = Create();
+
+        _tray.States[0].ShouldBe((TrayIconState.Paused, "GapMouse — Paused"));
+        _tray.RaiseMenu();
+        _tray.MenuShown![0].Id.ShouldBe("resume");
+    }
+
+    [Fact]
+    public void Menu_ChooseCustomWithThrowingPrompt_DoesNotThrowOrPause()
+    {
+        using var c = Create();
+        _prompt.Throw = true;
+        _tray.Choice = "pause:Custom";
+
+        Should.NotThrow(() => _tray.RaiseMenu());
+
+        _engine.PauseCalls.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Menu_ChooseCustomTwiceWhilePending_OpensOnePrompt()
+    {
+        using var c = Create();
+        _prompt.Pending = new TaskCompletionSource<int?>();
+        _tray.Choice = "pause:Custom";
+
+        _tray.RaiseMenu();
+        _tray.RaiseMenu();
+        _prompt.Pending.SetResult(5);
+
+        _prompt.Calls.ShouldBe(1);
+        _engine.PauseCalls.ShouldBe([PauseDuration.Custom(5)]);
+
+        _tray.RaiseMenu();
+        _prompt.Calls.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Menu_CustomResultAfterDispose_DoesNotPause()
+    {
+        var c = Create();
+        _prompt.Pending = new TaskCompletionSource<int?>();
+        _tray.Choice = "pause:Custom";
+        _tray.RaiseMenu();
+
+        c.Dispose();
+        _prompt.Pending.SetResult(5);
+
+        _engine.PauseCalls.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Dispose_UnsubscribesFromEngine()
     {
         var c = Create();
@@ -414,7 +469,22 @@ public sealed class TrayCoordinatorTests : IDisposable
     {
         public int? Minutes { get; set; }
 
-        public Task<int?> AskMinutesAsync() => Task.FromResult(Minutes);
+        public bool Throw { get; set; }
+
+        public TaskCompletionSource<int?>? Pending { get; set; }
+
+        public int Calls { get; private set; }
+
+        public Task<int?> AskMinutesAsync()
+        {
+            Calls++;
+            if (Throw)
+            {
+                throw new InvalidOperationException("boom");
+            }
+
+            return Pending?.Task ?? Task.FromResult(Minutes);
+        }
     }
 
     private sealed class FakeWindow : IMainWindowService
