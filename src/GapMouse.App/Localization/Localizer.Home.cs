@@ -53,7 +53,7 @@ public sealed partial class Localizer
     public string CustomPauseInvalid => T("Enter a whole number from 1 to 1440.", "Informe um número inteiro de 1 a 1440.");
 
     public string FormatIdle(int seconds, int thresholdSeconds) =>
-        string.Format(Culture, T("Idle for {0} s of {1} s", "Inativo há {0} s de {1} s"), seconds, thresholdSeconds);
+        string.Format(Culture, T("Idle for {0}\u00A0s of {1}\u00A0s", "Inativo há {0}\u00A0s de {1}\u00A0s"), seconds, thresholdSeconds);
 
     public string FormatResumesIn(string time) =>
         string.Format(Culture, T("Resumes in {0}", "Retoma em {0}"), time);
