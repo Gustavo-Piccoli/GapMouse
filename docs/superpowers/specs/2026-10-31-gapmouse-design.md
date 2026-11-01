@@ -212,6 +212,7 @@ tests/
 Todas **[decisão do Claude]**:
 
 1. **Bandeja e atalho sem janela:** com "iniciar minimizado", a janela pode nunca ser criada. Bandeja, atalho global (`RegisterHotKey`) e instância única devem funcionar **sem a janela principal**. Use uma janela oculta *message-only* (HWND próprio) na Infrastructure para receber `WM_HOTKEY` e as mensagens de ativação da segunda instância.
+   - Nota: na implementação o shell usa uma janela de topo oculta, e não *message-only* (ver ADR 0006).
 2. **Fechar no ✕ pela primeira vez:** mostra um balão avisando "O GapMouse continua rodando na bandeja". O aviso aparece só uma vez (fica salvo nas configurações).
 3. **Ao retomar** (manual ou por fim do tempo), o motor vai para Waiting usando o **idle real do sistema**. Se o usuário ficou longe o tempo todo, o motor passa direto para Moving no próximo ciclo. Esse comportamento é o desejado.
 4. **"Hoje"** conta **apenas o tempo em Moving** e o número de entradas em Moving. O tempo pausado não entra em nenhuma métrica.

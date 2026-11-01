@@ -51,7 +51,7 @@ Estado atual: Plano 3 (app desktop Avalonia: bandeja, abas Início/Logs/Configur
 - As flags do DevConsole sobrepõem as configurações salvas apenas naquela execução e **não** são gravadas.
 - O DevConsole nunca grava a chave Run do registro (`StartWithWindowsService` não é ligado nele).
 - Retenção de logs: um arquivo é apagado quando a data no nome é anterior a hoje − N; com N = 7 ficam hoje e os 7 dias anteriores.
-- Para quem compuser o app (Plano 3): descarte na ordem host → `AppStatePersister` → `ActivityLogWriter` → `UpdateService` → `HttpClient` (o persister lê o snapshot, publicado depois que os eventos são disparados). Não salve as configurações após um carregamento que não conseguiu ler o arquivo (`FileExisted=true` com aviso de leitura), senão os padrões sobrescrevem o arquivo do usuário. `UpdateFound` e `EventRaised` disparam fora da thread de UI.
+- O descarte do app segue a ordem de `AppShutdown` (ADR 0006): view models, bandeja, atalho, host, `AppStatePersister`, `ActivityLogWriter`, `UpdateService`, `HttpClient`, janela do shell e, por fim, `desktop.Shutdown()` (o persister lê o snapshot, publicado depois que os eventos são disparados). Não salve as configurações após um carregamento que não conseguiu ler o arquivo (`FileExisted=true` com aviso de leitura), senão os padrões sobrescrevem o arquivo do usuário. `UpdateFound` e `EventRaised` disparam fora da thread de UI.
 - A janela do shell (`ShellWindow`) roda na mesma thread e no loop de mensagens do Avalonia (thread de UI); não há thread de mensagens separada. Eventos do motor e de atualização chegam aos view models só via `IUiDispatcher`, e todo `Save` de configurações fica na thread de UI.
 - Localização: cada texto é `T("English", "Português")` no arquivo parcial `Localizer.<Área>.cs`; o idioma troca ao vivo. Tags de log (START…ERROR) e mensagens em disco ficam em inglês.
 - `--minimized` (ou `StartMinimized`) inicia só com a bandeja, sem janela. O registro de "iniciar com o Windows" usa `--minimized`.
@@ -73,7 +73,7 @@ dotnet publish tools/GapMouse.DevConsole -c Release -r win-x64 -o artifacts/devc
 
 - O runner é Microsoft.Testing.Platform (`global.json`), então a sintaxe de filtro é `--filter-not-trait`, não o `--filter` do VSTest.
 - Testes que usam a API Win32 de verdade levam `[Trait("Category","Win32")]` e movem o cursor 1 px (não mexa no mouse por ~2 s). O CI os exclui.
-- CI (`.github/workflows/ci.yml`): `build-test` (format, build Release, testes com cobertura) e `aot-publish` (publica o DevConsole em Native AOT com avisos como erro e envia o artefato `devconsole-win-x64`). Há também CodeQL e Dependabot.
+- CI (`.github/workflows/ci.yml`): `build-test` (format, build Release, testes com cobertura) e `aot-publish` (publica em Native AOT, com avisos como erro, o DevConsole como artefato `devconsole-win-x64` e o app `src/GapMouse.App` como artefato `gapmouse-win-x64`). Há também CodeQL e Dependabot.
 
 ## Convenções
 
