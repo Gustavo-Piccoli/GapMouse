@@ -34,8 +34,4 @@
     <InternalsVisibleTo Include="GapMouse.App.Tests" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="GapMouse.App.Tests" />
-  </ItemGroup>
-
 </Project>

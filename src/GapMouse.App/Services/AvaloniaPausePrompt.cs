@@ -21,6 +21,7 @@ public sealed class AvaloniaPausePrompt(Localizer localizer, Func<Window?> owner
         else
         {
             window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            window.Topmost = true;
             window.Show();
             window.Activate();
         }
