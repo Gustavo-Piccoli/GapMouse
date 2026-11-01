@@ -3,86 +3,169 @@
              xmlns:vm="using:GapMouse.App.ViewModels"
              x:Class="GapMouse.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
-  <ScrollViewer>
-    <StackPanel Margin="16" Spacing="20" MaxWidth="560" HorizontalAlignment="Left">
-      <StackPanel Spacing="8">
-        <TextBlock Text="{Binding L.SettingsGroupMovement}" FontWeight="SemiBold" FontSize="16" />
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsIdle}" />
-          <TextBox Text="{Binding IdleText}" />
-          <TextBlock Text="{Binding IdleError}" Classes="error" IsVisible="{Binding IdleError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsCheck}" />
-          <TextBox Text="{Binding CheckText}" />
-          <TextBlock Text="{Binding CheckError}" Classes="error" IsVisible="{Binding CheckError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsMin}" />
-          <TextBox Text="{Binding MinText}" />
-          <TextBlock Text="{Binding MinError}" Classes="error" IsVisible="{Binding MinError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsMax}" />
-          <TextBox Text="{Binding MaxText}" />
-          <TextBlock Text="{Binding MaxError}" Classes="error" IsVisible="{Binding MaxError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsAmplitude}" />
-          <TextBox Text="{Binding AmplitudeText}" />
-          <TextBlock Text="{Binding AmplitudeError}" Classes="error" IsVisible="{Binding AmplitudeError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
+  <DockPanel>
+    <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource GmHairlineBrush}" BorderThickness="0,1,0,0"
+            Background="{DynamicResource GmGroundBrush}">
+      <StackPanel Orientation="Horizontal" Spacing="8" Margin="24,12">
+        <Button Content="{Binding L.SettingsSave}" Command="{Binding SaveCommand}" Classes="accent" VerticalAlignment="Center" />
+        <Button Content="{Binding L.SettingsRestoreDefaults}" Command="{Binding RestoreDefaultsCommand}" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding StatusMessage}" Classes="muted" Margin="8,0,0,0" VerticalAlignment="Center"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
       </StackPanel>
+    </Border>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="24" Spacing="24" MaxWidth="640" HorizontalAlignment="Stretch">
       <StackPanel Spacing="8">
-        <TextBlock Text="{Binding L.SettingsGroupPower}" FontWeight="SemiBold" FontSize="16" />
-        <CheckBox IsChecked="{Binding KeepDisplayOn}" Content="{Binding L.SettingsKeepDisplayOn}" />
-      </StackPanel>
-      <StackPanel Spacing="8">
-        <TextBlock Text="{Binding L.SettingsGroupSystem}" FontWeight="SemiBold" FontSize="16" />
-        <CheckBox IsChecked="{Binding StartWithWindows}" Content="{Binding L.SettingsStartWithWindows}" />
-        <CheckBox IsChecked="{Binding StartMinimized}" Content="{Binding L.SettingsStartMinimized}" />
-        <CheckBox IsChecked="{Binding NotificationsEnabled}" Content="{Binding L.SettingsNotifications}" />
-        <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{Binding L.SettingsCheckUpdates}" />
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsHotkey}" />
-          <TextBox x:Name="HotkeyBox" Text="{Binding HotkeyText}" IsReadOnly="True" />
-          <TextBlock Text="{Binding L.SettingsHotkeyHint}" Opacity="0.7" />
-          <TextBlock Text="{Binding HotkeyError}" Classes="error" IsVisible="{Binding HotkeyError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-          <TextBlock Text="{Binding HotkeyWarning}" Classes="warning" IsVisible="{Binding HotkeyWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
-      </StackPanel>
-      <StackPanel Spacing="8">
-        <TextBlock Text="{Binding L.SettingsGroupAppearance}" FontWeight="SemiBold" FontSize="16" />
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsTheme}" />
-          <ComboBox SelectedIndex="{Binding ThemeIndex}">
-            <ComboBoxItem Content="{Binding L.SettingsThemeDark}" />
-            <ComboBoxItem Content="{Binding L.SettingsThemeLight}" />
-          </ComboBox>
-        </StackPanel>
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsLanguage}" />
-          <ComboBox SelectedIndex="{Binding LanguageIndex}">
-            <ComboBoxItem Content="{Binding L.SettingsLanguageAuto}" />
-            <ComboBoxItem Content="{Binding L.SettingsLanguagePortuguese}" />
-            <ComboBoxItem Content="{Binding L.SettingsLanguageEnglish}" />
-          </ComboBox>
-        </StackPanel>
+        <TextBlock Text="{Binding L.SettingsGroupMovement}" Classes="group" Margin="4,0,0,0" />
+        <Border Classes="card">
+          <StackPanel>
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsIdle}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding IdleError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding IdleError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Width="96" Text="{Binding IdleText}" TextAlignment="Right" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsIdle}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsCheck}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding CheckError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding CheckError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Width="96" Text="{Binding CheckText}" TextAlignment="Right" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsCheck}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsMin}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding MinError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding MinError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Width="96" Text="{Binding MinText}" TextAlignment="Right" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsMin}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsMax}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding MaxError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding MaxError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Width="96" Text="{Binding MaxText}" TextAlignment="Right" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsMax}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsAmplitude}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding AmplitudeError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding AmplitudeError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Width="96" Text="{Binding AmplitudeText}" TextAlignment="Right" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsAmplitude}" />
+          </Grid>
+          </StackPanel>
+        </Border>
       </StackPanel>
       <StackPanel Spacing="8">
-        <TextBlock Text="{Binding L.SettingsGroupLogs}" FontWeight="SemiBold" FontSize="16" />
-        <CheckBox IsChecked="{Binding SaveLogsToFile}" Content="{Binding L.SettingsSaveLogs}" />
-        <StackPanel Spacing="2">
-          <TextBlock Text="{Binding L.SettingsRetention}" />
-          <TextBox Text="{Binding RetentionText}" />
-          <TextBlock Text="{Binding RetentionError}" Classes="error" IsVisible="{Binding RetentionError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        </StackPanel>
+        <TextBlock Text="{Binding L.SettingsGroupPower}" Classes="group" Margin="4,0,0,0" />
+        <Border Classes="card">
+          <StackPanel>
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsKeepDisplayOn}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding KeepDisplayOn}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsKeepDisplayOn}" />
+          </Grid>
+          </StackPanel>
+        </Border>
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Content="{Binding L.SettingsSave}" Command="{Binding SaveCommand}" />
-        <Button Content="{Binding L.SettingsRestoreDefaults}" Command="{Binding RestoreDefaultsCommand}" />
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding L.SettingsGroupSystem}" Classes="group" Margin="4,0,0,0" />
+        <Border Classes="card">
+          <StackPanel>
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsStartWithWindows}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding StartWithWindows}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsStartWithWindows}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsStartMinimized}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding StartMinimized}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsStartMinimized}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsNotifications}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding NotificationsEnabled}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsNotifications}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsCheckUpdates}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding CheckForUpdates}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsCheckUpdates}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsHotkey}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding L.SettingsHotkeyHint}" Classes="caption" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding HotkeyError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding HotkeyError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <TextBlock Text="{Binding HotkeyWarning}" Classes="warning" TextWrapping="Wrap" IsVisible="{Binding HotkeyWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox x:Name="HotkeyBox" Grid.Column="1" Width="180" Text="{Binding HotkeyText}" IsReadOnly="True" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsHotkey}" />
+          </Grid>
+          </StackPanel>
+        </Border>
       </StackPanel>
-      <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}" />
-    </StackPanel>
-  </ScrollViewer>
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding L.SettingsGroupAppearance}" Classes="group" Margin="4,0,0,0" />
+        <Border Classes="card">
+          <StackPanel>
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsTheme}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" Width="180" SelectedIndex="{Binding ThemeIndex}" VerticalAlignment="Center"
+                      AutomationProperties.Name="{Binding L.SettingsTheme}">
+              <ComboBoxItem Content="{Binding L.SettingsThemeDark}" />
+              <ComboBoxItem Content="{Binding L.SettingsThemeLight}" />
+            </ComboBox>
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsLanguage}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" Width="180" SelectedIndex="{Binding LanguageIndex}" VerticalAlignment="Center"
+                      AutomationProperties.Name="{Binding L.SettingsLanguage}">
+              <ComboBoxItem Content="{Binding L.SettingsLanguageAuto}" />
+              <ComboBoxItem Content="{Binding L.SettingsLanguagePortuguese}" />
+              <ComboBoxItem Content="{Binding L.SettingsLanguageEnglish}" />
+            </ComboBox>
+          </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding L.SettingsGroupLogs}" Classes="group" Margin="4,0,0,0" />
+        <Border Classes="card">
+          <StackPanel>
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.SettingsSaveLogs}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding SaveLogsToFile}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsSaveLogs}" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsRetention}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding RetentionError}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding RetentionError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Width="96" Text="{Binding RetentionText}" TextAlignment="Right" VerticalAlignment="Center"
+                     AutomationProperties.Name="{Binding L.SettingsRetention}" />
+          </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
 </UserControl>
