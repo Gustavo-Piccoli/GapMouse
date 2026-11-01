@@ -2,11 +2,29 @@
 
 [![CI](https://github.com/Gustavo-Piccoli/GapMouse/actions/workflows/ci.yml/badge.svg)](https://github.com/Gustavo-Piccoli/GapMouse/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Gustavo-Piccoli/GapMouse/actions/workflows/codeql.yml/badge.svg)](https://github.com/Gustavo-Piccoli/GapMouse/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/Gustavo-Piccoli/GapMouse)](https://github.com/Gustavo-Piccoli/GapMouse/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Keeps your Windows PC awake and your status available while you're away — light, private, no admin required.
 
-> 🚧 **Under development.** The keep-awake engine, a developer console and the desktop app (tray, tabs, themes, English and Portuguese) are working; the installer and portable builds are next. See the [roadmap](#roadmap).
+Releases are published on [GitHub Releases](https://github.com/Gustavo-Piccoli/GapMouse/releases). See the [roadmap](#roadmap).
+
+## Download
+
+Get the latest build from [GitHub Releases](https://github.com/Gustavo-Piccoli/GapMouse/releases/latest):
+
+- **Installer** (`GapMouse-Setup-<version>-<arch>.exe`): installs per user, no admin rights needed, with an optional "Start with Windows" checkbox.
+- **Portable zip** (`GapMouse-<version>-<arch>-portable.zip`): unzip anywhere and run `GapMouse.exe`. Settings and logs stay next to the exe, so it runs from a USB drive.
+- **winget**: `winget install GustavoPiccoli.GapMouse` (available after the first winget submission is approved).
+- **`SHA256SUMS.txt`**: checksums for every file in the release.
+
+Pick **x64** for most PCs (Intel and AMD) and **ARM64** for Windows on ARM devices (for example Snapdragon laptops).
+
+The builds are not code-signed yet, so Windows SmartScreen may warn you. Choose "More info" and then "Run anyway". Code signing through SignPath is planned.
+
+To uninstall, use "Installed apps" in Windows Settings. Your settings in `%AppData%\GapMouse` and logs in `%LocalAppData%\GapMouse\logs` are kept.
+
+If a settings file already exists, the app's saved "Start with Windows" choice wins over the installer checkbox the next time the app starts.
 
 ## Build from source
 
@@ -38,7 +56,7 @@ Flags: `--idle <s>`, `--check <s>`, `--min <s>`, `--max <s>`, `--amplitude <px>`
 
 ## Using GapMouse
 
-Run the desktop app with `dotnet run --project src/GapMouse.App`. It lives in the notification area (tray).
+Start GapMouse from the Start Menu (installed) or run `GapMouse.exe` (portable). Developers can use `dotnet run --project src/GapMouse.App`. The app lives in the notification area (tray).
 
 - **Tray icon color:** blue while waiting, green while moving the mouse, amber while paused. The tooltip shows the state.
 - **Tray menu (right click):** `Pause` (10 min, 30 min, 1 h, Custom, Never) or `Resume` when paused, then `Open` and `Exit`. Double-click opens the window.
@@ -48,7 +66,7 @@ Run the desktop app with `dotnet run --project src/GapMouse.App`. It lives in th
 - **Single instance:** launching a second copy brings the running window to the front and exits.
 - **Tabs:** Home (state, today's stats, pause and resume), Logs (live activity log with filter, copy and open folder), Settings (engine, startup, theme, language, hotkey, logs) and About (version, update check, paths).
 
-Theme (dark or light) and language (English or Portuguese, or follow Windows) change immediately, with no restart. Screenshots and a demo GIF arrive with the distribution plan.
+Theme (dark or light) and language (English or Portuguese, or follow Windows) change immediately, with no restart.
 
 ## Architecture
 
@@ -85,8 +103,9 @@ The developer console always keeps its data next to its own exe.
 
 1. Foundation and headless engine.
 2. Persistence and system integration.
-3. Avalonia desktop app: tray, tabs, themes, i18n (current).
-4. Distribution: installer, portable build, winget.
+3. Avalonia desktop app: tray, tabs, themes, i18n.
+4. Distribution: installer, portable build, release pipeline (current).
+5. Post-v1: winget submission, code signing.
 
 ## Disclaimer
 
