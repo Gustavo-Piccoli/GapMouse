@@ -11,78 +11,55 @@
     <v:UpperCaseConverter x:Key="Upper" />
   </UserControl.Resources>
   <UserControl.Styles>
-    <!-- Door-hanger face: one fill per state, with its own ink. The flip plays when a state class becomes active. -->
-    <Style Selector="Border.face">
+    <!-- Door-hanger face: the face sets its fill and ink (children inherit the ink; rings bind to it).
+         The flip must live in each state-class style so it replays when the class becomes active. -->
+    <Style Selector="ContentPresenter.face">
       <Setter Property="Width" Value="220" />
       <Setter Property="CornerRadius" Value="{DynamicResource GmCardRadius}" />
+      <Setter Property="Padding" Value="16" />
       <Setter Property="RenderTransformOrigin" Value="50%,50%" />
       <Setter Property="RenderTransform">
         <ScaleTransform ScaleX="1" ScaleY="1" />
       </Setter>
     </Style>
-    <Style Selector="Border.face.waiting">
+    <Style Selector="ContentPresenter.face.waiting">
       <Setter Property="Background" Value="{DynamicResource GmStateWaitingBrush}" />
-      <Style.Animations>
-        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
-          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
-          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-    <Style Selector="Border.face.moving">
-      <Setter Property="Background" Value="{DynamicResource GmStateMovingBrush}" />
-      <Style.Animations>
-        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
-          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
-          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-    <Style Selector="Border.face.paused">
-      <Setter Property="Background" Value="{DynamicResource GmStatePausedBrush}" />
-      <Style.Animations>
-        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
-          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
-          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <Style Selector="Border.face.waiting TextBlock.ink">
       <Setter Property="Foreground" Value="{DynamicResource GmStateWaitingInkBrush}" />
+      <Style.Animations>
+        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
     </Style>
-    <Style Selector="Border.face.waiting TextBlock.inkSecondary">
+    <Style Selector="ContentPresenter.face.waiting TextBlock.inkSecondary">
       <Setter Property="Foreground" Value="{DynamicResource GmStateWaitingInkSecondaryBrush}" />
     </Style>
-    <Style Selector="Border.face.waiting Ellipse.ring">
-      <Setter Property="Stroke" Value="{DynamicResource GmStateWaitingInkBrush}" />
-    </Style>
-    <Style Selector="Border.face.waiting shapes|Arc.ring">
-      <Setter Property="Stroke" Value="{DynamicResource GmStateWaitingInkBrush}" />
-    </Style>
-    <Style Selector="Border.face.moving TextBlock.ink">
+    <Style Selector="ContentPresenter.face.moving">
+      <Setter Property="Background" Value="{DynamicResource GmStateMovingBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource GmStateMovingInkBrush}" />
+      <Style.Animations>
+        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
     </Style>
-    <Style Selector="Border.face.moving TextBlock.inkSecondary">
+    <Style Selector="ContentPresenter.face.moving TextBlock.inkSecondary">
       <Setter Property="Foreground" Value="{DynamicResource GmStateMovingInkSecondaryBrush}" />
     </Style>
-    <Style Selector="Border.face.moving Ellipse.ring">
-      <Setter Property="Stroke" Value="{DynamicResource GmStateMovingInkBrush}" />
-    </Style>
-    <Style Selector="Border.face.moving shapes|Arc.ring">
-      <Setter Property="Stroke" Value="{DynamicResource GmStateMovingInkBrush}" />
-    </Style>
-    <Style Selector="Border.face.paused TextBlock.ink">
+    <Style Selector="ContentPresenter.face.paused">
+      <Setter Property="Background" Value="{DynamicResource GmStatePausedBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource GmStatePausedInkBrush}" />
+      <Style.Animations>
+        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
     </Style>
-    <Style Selector="Border.face.paused TextBlock.inkSecondary">
+    <Style Selector="ContentPresenter.face.paused TextBlock.inkSecondary">
       <Setter Property="Foreground" Value="{DynamicResource GmStatePausedInkSecondaryBrush}" />
-    </Style>
-    <Style Selector="Border.face.paused Ellipse.ring">
-      <Setter Property="Stroke" Value="{DynamicResource GmStatePausedInkBrush}" />
-    </Style>
-    <Style Selector="Border.face.paused shapes|Arc.ring">
-      <Setter Property="Stroke" Value="{DynamicResource GmStatePausedInkBrush}" />
     </Style>
 
     <Style Selector="Ellipse.ring">
@@ -120,20 +97,21 @@
 
   <Grid Margin="24" RowDefinitions="*,Auto" RowSpacing="16">
     <Grid ColumnDefinitions="220,16,*">
-      <Border Classes="face"
+      <ContentPresenter Classes="face"
               Classes.waiting="{Binding IsWaiting}"
               Classes.moving="{Binding IsMoving}"
               Classes.paused="{Binding IsPaused}">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+        <Grid RowDefinitions="Auto,*,Auto">
           <Grid Width="56" Height="56" HorizontalAlignment="Left" AutomationProperties.AccessibilityView="Raw">
-            <Ellipse Classes="ring track" />
+            <Ellipse Classes="ring track" Stroke="{Binding $parent[ContentPresenter].Foreground}" />
             <shapes:Arc Classes="ring"
+                        Stroke="{Binding $parent[ContentPresenter].Foreground}"
                         SweepAngle="{Binding IdleProgress, Converter={StaticResource Sweep}}"
                         IsVisible="{Binding !IsPaused}" />
           </Grid>
           <StackPanel Grid.Row="2" Spacing="4">
             <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left">
-              <TextBlock Classes="ink"
+              <TextBlock
                          Text="{Binding StateText, Converter={StaticResource Upper}}"
                          FontFamily="{DynamicResource GmFontDisplay}"
                          FontSize="30" FontWeight="Bold" LetterSpacing="0.6" />
@@ -143,7 +121,7 @@
                        IsVisible="{Binding HasPauseText}" />
           </StackPanel>
         </Grid>
-      </Border>
+      </ContentPresenter>
 
       <StackPanel Grid.Column="2" Spacing="16">
         <Border Classes="card">
