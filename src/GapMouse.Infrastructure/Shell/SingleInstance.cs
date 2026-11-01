@@ -9,10 +9,21 @@ public sealed class SingleInstance : IDisposable
 
     private SingleInstance(Mutex mutex) => _mutex = mutex;
 
-    /// <summary>Returns the guard, or null when another holder exists.</summary>
+    /// <summary>Returns the guard, or null when another holder exists (including one we are not allowed to open, such as an elevated instance).</summary>
     public static SingleInstance? TryAcquire(string name = @"Local\GapMouse.SingleInstance")
     {
-        var mutex = new Mutex(true, name, out var createdNew);
+        Mutex mutex;
+        bool createdNew;
+        try
+        {
+            mutex = new Mutex(true, name, out createdNew);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // The mutex exists and its owner (for example an elevated process) denies us access.
+            return null;
+        }
+
         if (!createdNew)
         {
             mutex.Dispose();
