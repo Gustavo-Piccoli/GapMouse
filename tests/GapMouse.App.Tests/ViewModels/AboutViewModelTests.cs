@@ -22,6 +22,16 @@ public sealed class AboutViewModelTests
         new(_localizer, _updates, _launcher, new ImmediateUiDispatcher(), _paths, "0.1.0");
 
     [Fact]
+    public void Dispose_Twice_DoesNotThrow()
+    {
+        var vm = Create();
+
+        vm.Dispose();
+
+        Should.NotThrow(vm.Dispose);
+    }
+
+    [Fact]
     public async Task CheckUpdates_UpdateAvailable_ShowsVersionAndUrl()
     {
         _updates.Result = new UpdateCheckResult(UpdateCheckOutcome.UpdateAvailable, new Version(1, 2, 0), ReleaseUrl);
