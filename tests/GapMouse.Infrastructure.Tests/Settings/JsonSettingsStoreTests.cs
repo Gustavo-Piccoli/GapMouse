@@ -85,6 +85,14 @@ public class JsonSettingsStoreTests
     }
 
     [Fact]
+    public void Load_Missing_ReadFailedFalse()
+    {
+        using var dir = new TempDirectory();
+
+        new JsonSettingsStore(Path.Combine(dir.Path, FileName)).Load().ReadFailed.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Load_UnknownTheme_ResetsOnlyTheme()
     {
         using var dir = new TempDirectory();
@@ -163,7 +171,7 @@ public class JsonSettingsStoreTests
     }
 
     [Fact]
-    public void Load_FileLocked_ReturnsDefaultsWithWarningAndKeepsFile()
+    public void Load_FileLocked_SetsReadFailed()
     {
         using var dir = new TempDirectory();
         var path = Path.Combine(dir.Path, FileName);
@@ -176,6 +184,7 @@ public class JsonSettingsStoreTests
         result.FileExisted.ShouldBeTrue();
         result.Warnings.Count.ShouldBe(1);
         File.Exists(path + ".bad").ShouldBeFalse();
+        result.ReadFailed.ShouldBeTrue();
     }
 
     [Fact]
