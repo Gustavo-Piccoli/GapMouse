@@ -53,4 +53,19 @@ public sealed class Win32TrayIconTests
 
         tray.IsAdded.ShouldBeFalse();
     }
+
+    [Fact]
+    public void TaskbarCreated_AfterFailedFirstAdd_AddsIcon()
+    {
+        using var window = new ShellWindow();
+        using var tray = new Win32TrayIcon(window, Icons());
+        tray.FailNextAdd = true;
+        tray.SetState(TrayIconState.Waiting, "GapMouse test");
+        tray.IsAdded.ShouldBeFalse();
+
+        ShellTestNative.SendMessageW(window.Handle, ShellTestNative.RegisterWindowMessageW("TaskbarCreated"), 0, 0);
+
+        tray.IsAdded.ShouldBeTrue();
+        tray.ReaddCount.ShouldBe(1);
+    }
 }

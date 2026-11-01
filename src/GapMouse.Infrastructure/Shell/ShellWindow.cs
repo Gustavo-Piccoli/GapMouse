@@ -38,6 +38,9 @@ public sealed unsafe class ShellWindow : IDisposable
     /// <summary>Raised synchronously when Windows is logging off or shutting down.</summary>
     public event EventHandler? SessionEnding;
 
+    /// <summary>Raised when an event handler or message observer threw; the exception is otherwise contained.</summary>
+    public event Action<Exception>? HandlerFailed;
+
     internal static uint ActivateMessage { get; } = RegisterWindowMessageW("GapMouse.Activate");
 
     internal static uint TaskbarCreatedMessage { get; } = RegisterWindowMessageW("TaskbarCreated");
@@ -111,14 +114,31 @@ public sealed unsafe class ShellWindow : IDisposable
                 }
             }
 #pragma warning disable CA1031 // An exception must never cross the unmanaged callback boundary.
-            catch (Exception)
+            catch (Exception ex)
 #pragma warning restore CA1031
             {
-                return 0;
+                window.ReportFailure(ex);
+                if (msg == WM_QUERYENDSESSION)
+                {
+                    return 1;
+                }
             }
         }
 
         return DefWindowProcW(hwnd, msg, wParam, lParam);
+    }
+
+    private void ReportFailure(Exception exception)
+    {
+        try
+        {
+            HandlerFailed?.Invoke(exception);
+        }
+#pragma warning disable CA1031 // The failure reporter itself must not cross the unmanaged callback boundary.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+        }
     }
 
     private bool HandleMessage(uint msg, nint wParam, nint lParam, out nint result)

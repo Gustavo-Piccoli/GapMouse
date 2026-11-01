@@ -3,7 +3,10 @@ using static GapMouse.Infrastructure.Shell.ShellNativeMethods;
 
 namespace GapMouse.Infrastructure.Shell;
 
-/// <summary>A system-wide hotkey delivered to a <see cref="ShellWindow"/>.</summary>
+/// <summary>
+/// A system-wide hotkey delivered to a <see cref="ShellWindow"/>.
+/// Contract: <see cref="TryRegister"/> always releases the previous registration first, so after a failed call no hotkey is registered.
+/// </summary>
 public sealed class Win32GlobalHotkey : IGlobalHotkey
 {
     private const int HotkeyId = 1;

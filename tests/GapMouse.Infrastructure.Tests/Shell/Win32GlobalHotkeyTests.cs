@@ -46,4 +46,22 @@ public sealed class Win32GlobalHotkeyTests
 
         raised.ShouldBe(1);
     }
+
+    [Fact]
+    public void TryRegister_FailedAfterSuccess_ReleasesPreviousGesture()
+    {
+        HotkeyGesture.TryParse("Ctrl+Alt+Shift+F23", out var other).ShouldBeTrue();
+        using var holderWindow = new ShellWindow();
+        using var window = new ShellWindow();
+        using var probeWindow = new ShellWindow();
+        using var holder = new Win32GlobalHotkey(holderWindow);
+        using var hotkey = new Win32GlobalHotkey(window);
+        using var probe = new Win32GlobalHotkey(probeWindow);
+        holder.TryRegister(other!).ShouldBeTrue();
+        hotkey.TryRegister(Gesture()).ShouldBeTrue();
+
+        hotkey.TryRegister(other!).ShouldBeFalse();
+
+        probe.TryRegister(Gesture()).ShouldBeTrue();
+    }
 }
