@@ -24,7 +24,13 @@ public sealed class App : Avalonia.Application
                     new HomeViewModel(localizer, null!, null!, TimeProvider.System, null!, null!),
                     new LogsViewModel(localizer),
                     new SettingsViewModel(localizer),
-                    new AboutViewModel(localizer)),
+                    new AboutViewModel(
+                        localizer,
+                        new PlaceholderUpdateChecker(),
+                        new Services.ShellLauncher(),
+                        new Services.AvaloniaUiDispatcher(),
+                        new GapMouse.Application.Paths.AppPaths(string.Empty, string.Empty, IsPortable: true),
+                        "0.1.0")),
             };
             window.Closed += (_, _) => desktop.Shutdown();
             desktop.MainWindow = window;
@@ -32,4 +38,16 @@ public sealed class App : Avalonia.Application
 
         base.OnFrameworkInitializationCompleted();
     }
+}
+
+internal sealed class PlaceholderUpdateChecker : GapMouse.Application.Updates.IUpdateChecker
+{
+    public event EventHandler<GapMouse.Application.Updates.UpdateCheckResult>? UpdateFound
+    {
+        add { }
+        remove { }
+    }
+
+    public Task<GapMouse.Application.Updates.UpdateCheckResult> CheckNowAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(new GapMouse.Application.Updates.UpdateCheckResult(GapMouse.Application.Updates.UpdateCheckOutcome.Failed, null, null));
 }
