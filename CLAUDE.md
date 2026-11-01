@@ -6,13 +6,13 @@ Este arquivo orienta o Claude Code (claude.ai/code) ao trabalhar neste repositó
 
 GapMouse é um utilitário .NET 10 para Windows que mantém o PC ativo (evita bloqueio de tela e suspensão) movendo o mouse quando o usuário está ocioso. É a reescrita do script PowerShell original, que continua em `legacy/` (`MOUSE.ps1`, `MOUSE.bat`) apenas como referência.
 
-Estado atual: Plano 3 (app desktop Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 4 distribuição (instalador, portátil, winget).
+Estado atual: Plano 4 (distribuição: instalador Inno Setup por usuário, zip portátil, checksums, pipeline de release x64 + ARM64 e release-please), sobre o app desktop do Plano 3 (Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 5 pós-v1 (envio ao winget, assinatura de código).
 
 ## Documentação
 
 - Spec: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`
 - Planos: `docs/superpowers/plans/`
-- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco, 0006 integração com o shell do Windows)
+- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco, 0006 integração com o shell do Windows, 0007 distribuição e pipeline de release)
 
 ## Projetos e responsabilidades
 
@@ -33,6 +33,8 @@ Estado atual: Plano 3 (app desktop Avalonia: bandeja, abas Início/Logs/Configur
   - `Composition/` — `AppComposition.Build` (raiz de composição, só fábricas singleton explícitas, seguras para AOT);
   - `StartupOptions` — argumentos de linha de comando (`--minimized`).
 - `tools/GapMouse.DevConsole` — console Native AOT só para desenvolvedores (não é distribuído). Guarda configurações, estado (`GapMouse.state.json`) e logs (`logs/`) ao lado do próprio exe (modo portátil fixo), nunca no perfil do usuário. Flags: `--idle`, `--check`, `--min`, `--max`, `--amplitude`, `--display on|off` (padrões de `EngineSettings.Default`: 120/1/10/25/120/on; flag inválida sai com código 2). Teclas: `p` pausa, `t` pausa de 1 min, `r` retoma, `q` sai; Ctrl+C encerra liberando a energia.
+- `build/` — scripts PowerShell de empacotamento (rodam em Windows PowerShell 5.1 e pwsh 7; os `Test-*` servem como testes): `Publish-App.ps1` (publica em AOT um runtime, grava a versão e copia só `GapMouse.exe`, `*.dll` e `LICENSE.txt`), `New-PortableZip.ps1`, `New-Checksums.ps1`, `New-Installer.ps1` (localiza o `ISCC.exe`, nunca instala o Inno), `Test-Package.ps1`, `Test-Portable.ps1` (abre o exe com `--minimized` e exige a linha START no log) e `Test-Installer.ps1` (instalação e desinstalação silenciosas em 3 fases). Saída em `artifacts/` (ignorada pelo git).
+- `installer/GapMouse.iss` — Inno Setup 6, por usuário (`{autopf}\GapMouse`), `AppMutex=GapMouse.SingleInstance`, tarefa opcional "Iniciar com o Windows" (desmarcada), inglês e português do Brasil; a desinstalação só apaga o valor Run se ele apontar para o próprio exe.
 - `tests/` — `*.Tests` por camada, `GapMouse.Architecture.Tests` (regras de dependência entre camadas) e `GapMouse.Testing` (biblioteca com dublês de teste compartilhados).
 
 ## Design: núcleo funcional + host
@@ -46,7 +48,7 @@ Estado atual: Plano 3 (app desktop Avalonia: bandeja, abas Início/Logs/Configur
 - Mover o cursor (`SetCursorPos` / `Cursor.Position`) **não** zera o contador de ociosidade do Windows (só input real ou `SendInput` zera). O motor depende disso: a ociosidade continua subindo durante o movimento sintético, e uso real é detectado quando ela cai abaixo do tempo decorrido desde o início do movimento (com tolerância de 0,5 s) ou fica < 1 s durante a espera.
 - O movimento sintético não evita suspensão; por isso o motor mantém um pedido de energia ativo (`PowerRequest`) enquanto roda.
 - Dívida técnica registrada: migrar para `SendInput` + hooks (ver ADR 0002).
-- O movimento se limita ao monitor principal.
+- O movimento se limita ao monitor onde o cursor está no início de cada movimento (spec §11.5, implementado no Plano 1).
 - `GapMouse.Application` não faz I/O nem referencia `System.Text.Json`, `System.Net.Http` ou `Microsoft.Win32` (garantido por teste de arquitetura); todo acesso a arquivo, rede e registro fica na Infrastructure.
 - As flags do DevConsole sobrepõem as configurações salvas apenas naquela execução e **não** são gravadas.
 - O DevConsole nunca grava a chave Run do registro (`StartWithWindowsService` não é ligado nele).
@@ -57,6 +59,10 @@ Estado atual: Plano 3 (app desktop Avalonia: bandeja, abas Início/Logs/Configur
 - `--minimized` (ou `StartMinimized`) inicia só com a bandeja, sem janela. O registro de "iniciar com o Windows" usa `--minimized`.
 - A instância única bloqueia um segundo `dotnet run` enquanto o app estiver aberto: a segunda execução só ativa a janela existente e sai com código 0.
 - O encerramento passa sempre por `AppShutdown.Exit()` (uma vez, na ordem do ADR 0006); a janela principal só esconde ao fechar (`MainWindowService`).
+- O publish AOT local pode precisar do `vswhere` no PATH; o `Publish-App.ps1` adiciona a pasta do Visual Studio Installer quando falta.
+- O valor Run (`HKCU\...\Run`, nome `GapMouse`) gravado pelo instalador deve ser idêntico ao de `StartupCommand.For` (`"<dir>\GapMouse.exe" --minimized`); senão o app o reescreve ao iniciar.
+- O publish entrega `GapMouse.exe` mais 3 DLLs nativas, não um único exe (ADR 0007).
+- PRs do release-please não rodam o CI (tags e PRs criados com `GITHUB_TOKEN` não disparam workflows); o `release.yml` é chamado por `workflow_call`.
 - O `.gitignore` padrão ignora pastas `Win32/`; há negações (`!src/**/Win32/`, `!tests/**/Win32/`). Ao criar pastas `Win32/` fora de `src/` e `tests/`, ou se arquivos "sumirem" do `git status`, verifique isso.
 
 ## Build e testes
@@ -73,7 +79,7 @@ dotnet publish tools/GapMouse.DevConsole -c Release -r win-x64 -o artifacts/devc
 
 - O runner é Microsoft.Testing.Platform (`global.json`), então a sintaxe de filtro é `--filter-not-trait`, não o `--filter` do VSTest.
 - Testes que usam a API Win32 de verdade levam `[Trait("Category","Win32")]` e movem o cursor 1 px (não mexa no mouse por ~2 s). O CI os exclui.
-- CI (`.github/workflows/ci.yml`): `build-test` (format, build Release, testes com cobertura) e `aot-publish` (publica em Native AOT, com avisos como erro, o DevConsole como artefato `devconsole-win-x64` e o app `src/GapMouse.App` como artefato `gapmouse-win-x64`). Há também CodeQL e Dependabot.
+- CI (`.github/workflows/ci.yml`): `build-test` (format, build Release, testes com cobertura) e `aot-publish` (publica em Native AOT, com avisos como erro, o DevConsole como artefato `devconsole-win-x64` e o app `src/GapMouse.App` como artefato `gapmouse-win-x64`). Há também CodeQL e Dependabot. `release.yml` (tag `v*`, `workflow_dispatch` com tag vazia = ensaio, `workflow_call` e PRs que mexem em arquivos de empacotamento = ensaio): version, build (x64 e ARM64 nativos), installer, installer-test, package (SHA256SUMS), publish e winget. `release-please.yml` abre o PR de release e chama o `release.yml`. Passo a passo em `docs/RELEASING.md`.
 
 ## Convenções
 
