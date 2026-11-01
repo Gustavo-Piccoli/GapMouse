@@ -251,6 +251,32 @@ public sealed class TrayCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void UpdateFound_BalloonNotShown_VersionNotRecordedSoItShowsAgain()
+    {
+        using var c = Create();
+        var result = new UpdateCheckResult(UpdateCheckOutcome.UpdateAvailable, new Version(1, 2, 0), new Uri("https://example.com/r"));
+
+        _tray.BalloonShown = false;
+        _updates.Raise(result);
+        _tray.BalloonShown = true;
+        _updates.Raise(result);
+        _updates.Raise(result);
+
+        _tray.Balloons.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void FirstWindowHide_BalloonNotShown_DoesNotMarkHintShown()
+    {
+        using var c = Create();
+
+        _tray.BalloonShown = false;
+        c.OnMainWindowHidden();
+
+        _settings.MarkCalls.ShouldBe(0);
+    }
+
+    [Fact]
     public void UpdateBalloonClicked_OpensReleaseUrl()
     {
         using var c = Create();
@@ -395,8 +421,13 @@ public sealed class TrayCoordinatorTests : IDisposable
 
         public void SetState(TrayIconState state, string tooltip) => States.Add((state, tooltip));
 
-        public void ShowBalloon(string title, string message, string? tag, bool silent) =>
+        public bool BalloonShown { get; set; } = true;
+
+        public bool ShowBalloon(string title, string message, string? tag, bool silent)
+        {
             Balloons.Add((title, message, tag, silent));
+            return BalloonShown;
+        }
 
         public string? ShowMenu(IReadOnlyList<TrayMenuItem> items)
         {
