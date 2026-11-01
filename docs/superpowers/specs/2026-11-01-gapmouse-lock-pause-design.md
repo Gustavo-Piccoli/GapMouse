@@ -93,7 +93,9 @@ Antiobjetivos (seria falha mesmo funcionando):
 
 - `AppSettings`/`SettingsDocument`/`JsonSettingsStore`: campo `keepAwakeWhileLocked` (`bool`, padrão `false`). Arquivo sem o campo carrega com o padrão e sem aviso.
 - Tela Configurações, grupo Energia, logo abaixo de "Manter a tela ligada": `ToggleSwitch` com rótulo T("Keep the PC awake while the screen is locked", "Manter o PC acordado com a tela bloqueada") e legenda `caption` T("The mouse stays still while locked; the screen can turn off.", "O mouse fica parado com a tela bloqueada; a tela pode desligar."). Segue o padrão de linha e o `AutomationProperties.Name` dos demais toggles. Mudar a opção aplica ao motor como as outras (`ApplySettings`) e gera a linha `CONFIG` de sempre.
-- A linha `CONFIG` (formato atual de `SettingsChanged`) inclui o valor novo.
+- A linha `CONFIG` continua `Settings changed` (formato atual, sem valores).
+- A tela Logs mostra as mensagens localizadas por evento (`LogMessageLocalizer`): `SessionLocked`/`SessionUnlocked` ganham textos EN/PT equivalentes aos de §5.3.
+- Bandeja (`TrayCoordinator`): `SessionLocked` vindo de Moving põe o ícone em "aguardando", sem balão.
 
 ## 6. Verificação
 
