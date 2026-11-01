@@ -6,6 +6,8 @@ namespace GapMouse.Screenshots;
 
 internal sealed class InMemorySettingsService : ISettingsService
 {
+    public bool FailToWrite { get; init; }
+
     public AppSettings Current { get; private set; } = AppSettings.Default;
 
     public bool IsHotkeyRegistered => true;
@@ -20,7 +22,7 @@ internal sealed class InMemorySettingsService : ISettingsService
     {
         Current = settings;
         Changed?.Invoke(this, settings);
-        return new SettingsSaveResult(Saved: true, StartupApplied: true, HotkeyRegistered: true);
+        return new SettingsSaveResult(Saved: !FailToWrite, StartupApplied: true, HotkeyRegistered: true);
     }
 
     public void MarkTrayHintShown()
