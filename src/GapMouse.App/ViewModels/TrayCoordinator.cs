@@ -55,8 +55,11 @@ public sealed class TrayCoordinator(
             return;
         }
 
-        tray.ShowBalloon(l.AppName, l.TrayHint, null, silent: true);
-        settings.MarkTrayHintShown();
+        // Only a balloon that was actually shown consumes the one-time hint.
+        if (tray.ShowBalloon(l.AppName, l.TrayHint, null, silent: true))
+        {
+            settings.MarkTrayHintShown();
+        }
     }
 
     public void Dispose()
@@ -245,16 +248,20 @@ public sealed class TrayCoordinator(
     private void OnUpdateFound(object? sender, UpdateCheckResult result) => ui.Post(() =>
     {
         if (_disposed || result.LatestVersion is not { } version || result.ReleaseUrl is not { } url
-            || !_announcedVersions.Add(version))
+            || _announcedVersions.Contains(version))
         {
             return;
         }
 
-        tray.ShowBalloon(
+        // Remember the version only once the balloon was shown, so a tray that is not ready yet does not swallow it.
+        if (tray.ShowBalloon(
             l.TrayUpdateTitle,
             l.TrayUpdateBody(version.ToString()),
             UpdateTagPrefix + url.AbsoluteUri,
-            silent: false);
+            silent: false))
+        {
+            _announcedVersions.Add(version);
+        }
     });
 
     private void OnBalloonClicked(object? sender, string? tag)

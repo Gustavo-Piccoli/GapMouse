@@ -59,12 +59,12 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
         }
     }
 
-    public void ShowBalloon(string title, string message, string? tag, bool silent)
+    public bool ShowBalloon(string title, string message, string? tag, bool silent)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (!IsAdded)
         {
-            return;
+            return false;
         }
 
         _balloonTag = tag;
@@ -74,6 +74,7 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
         CopyTo(data.szInfo, 256, message);
         data.dwInfoFlags = NIIF_INFO | (silent ? NIIF_NOSOUND : 0);
         Shell_NotifyIconW(NIM_MODIFY, in data);
+        return true;
     }
 
     public string? ShowMenu(IReadOnlyList<TrayMenuItem> items)
