@@ -66,7 +66,13 @@ public static class AppComposition
 
     private static void AddLogging(IServiceCollection services, SettingsLoadResult loaded)
     {
-        services.AddSingleton(sp => new FileActivityLog(sp.GetRequiredService<AppPaths>().LogsDirectory, sp.GetRequiredService<TimeProvider>()));
+        services.AddSingleton(sp =>
+        {
+            // Configured before anything can append, so retention and the on/off switch never run with defaults.
+            var file = new FileActivityLog(sp.GetRequiredService<AppPaths>().LogsDirectory, sp.GetRequiredService<TimeProvider>());
+            file.Configure(loaded.Settings.SaveLogsToFile, loaded.Settings.LogRetentionDays);
+            return file;
+        });
         services.AddSingleton<ILogFileOptions>(sp => sp.GetRequiredService<FileActivityLog>());
         services.AddSingleton<InMemoryActivityLog>();
         services.AddSingleton<IActivityLog>(sp =>
@@ -88,6 +94,7 @@ public static class AppComposition
         Logger<StartWithWindowsService>(services);
         Logger<AppShutdown>(services);
         Logger<ShellWindow>(services);
+        Logger<App>(services);
     }
 
     private static void AddEngine(IServiceCollection services, SettingsLoadResult loaded)
