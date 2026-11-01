@@ -34,4 +34,7 @@ Copy-Item -LiteralPath (Join-Path $obj 'GapMouse.exe') -Destination $OutputDir
 Get-ChildItem -LiteralPath $obj -Filter '*.dll' -File | Copy-Item -Destination $OutputDir
 Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination (Join-Path $OutputDir 'LICENSE.txt')
 
+$productVersion = (Get-Item -LiteralPath (Join-Path $OutputDir 'GapMouse.exe')).VersionInfo.ProductVersion
+if (-not $productVersion.StartsWith($Version)) { throw "GapMouse.exe ProductVersion '$productVersion' does not start with requested version '$Version'" }
+
 $OutputDir
