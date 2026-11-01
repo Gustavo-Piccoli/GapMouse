@@ -183,12 +183,79 @@ public sealed class LogsViewModelTests
         vm.Lines.ShouldBeEmpty();
     }
 
+    [Fact]
+    public void Constructor_EntryAppendedBetweenSubscribeAndSnapshot_IsShownOnce()
+    {
+        var gap = Entry(LogKind.Start, "gap");
+        var dispatcher = new QueueingDispatcher();
+
+        using var vm = new LogsViewModel(_l, _log, dispatcher, _clipboard, _launcher, "C:/logs", () => _log.Append(gap));
+        dispatcher.Flush();
+
+        vm.Lines.Count.ShouldBe(1);
+        vm.Lines[0].Message.ShouldBe("gap");
+    }
+
+    [Fact]
+    public void EntryAdded_ValueEqualButDistinctEntries_AreBothShown()
+    {
+        using var vm = Create();
+
+        _log.Append(Entry(LogKind.Moving, "same"));
+        _log.Append(Entry(LogKind.Moving, "same"));
+
+        vm.Lines.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Copy_ClipboardThrows_DoesNotPropagate()
+    {
+        _clipboard.Throw = true;
+        _log.Append(Entry(LogKind.Start));
+        using var vm = Create();
+
+        await vm.CopyCommand.ExecuteAsync(null);
+
+        _clipboard.Text.ShouldBeNull();
+    }
+
+    [Fact]
+    public void OpenFolder_LauncherThrows_DoesNotPropagate()
+    {
+        _launcher.Throw = true;
+        using var vm = Create();
+
+        Should.NotThrow(() => vm.OpenFolderCommand.Execute(null));
+    }
+
+    private sealed class QueueingDispatcher : IUiDispatcher
+    {
+        private readonly Queue<Action> _queue = new();
+
+        public void Post(Action action) => _queue.Enqueue(action);
+
+        public void Flush()
+        {
+            while (_queue.Count > 0)
+            {
+                _queue.Dequeue()();
+            }
+        }
+    }
+
     private sealed class FakeClipboard : IClipboardService
     {
+        public bool Throw { get; set; }
+
         public string? Text { get; private set; }
 
         public Task SetTextAsync(string text)
         {
+            if (Throw)
+            {
+                throw new InvalidOperationException("clipboard");
+            }
+
             Text = text;
             return Task.CompletedTask;
         }
@@ -198,7 +265,17 @@ public sealed class LogsViewModelTests
     {
         public List<string> Folders { get; } = [];
 
-        public void OpenFolder(string path) => Folders.Add(path);
+        public bool Throw { get; set; }
+
+        public void OpenFolder(string path)
+        {
+            if (Throw)
+            {
+                throw new UnauthorizedAccessException();
+            }
+
+            Folders.Add(path);
+        }
 
         public void OpenUrl(Uri url) => throw new NotSupportedException();
     }
