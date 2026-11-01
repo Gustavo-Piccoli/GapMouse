@@ -6,13 +6,13 @@ Este arquivo orienta o Claude Code (claude.ai/code) ao trabalhar neste repositó
 
 GapMouse é um utilitário .NET 10 para Windows que mantém o PC ativo (evita bloqueio de tela e suspensão) movendo o mouse quando o usuário está ocioso. É a reescrita do script PowerShell original, que continua em `legacy/` (`MOUSE.ps1`, `MOUSE.bat`) apenas como referência.
 
-Estado atual: v1.1 (refresh visual: navegação em trilho lateral, face da Home em formato de "door hanger" com cores por estado, temas claro/escuro baseados em tokens) sobre o Plano 4 (distribuição: instalador Inno Setup por usuário, zip portátil, checksums, pipeline de release x64 + ARM64 e release-please), sobre o app desktop do Plano 3 (Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 5 pós-v1 (envio ao winget, assinatura de código).
+Estado atual: v1.2 (pausa com a tela bloqueada: o mouse para ao bloquear a sessão, com opção de manter o sistema acordado) sobre a v1.1 (refresh visual: navegação em trilho lateral, face da Home em formato de "door hanger" com cores por estado, temas claro/escuro baseados em tokens) sobre o Plano 4 (distribuição: instalador Inno Setup por usuário, zip portátil, checksums, pipeline de release x64 + ARM64 e release-please), sobre o app desktop do Plano 3 (Avalonia: bandeja, abas Início/Logs/Configurações/Sobre, temas claro/escuro, inglês e português, instância única, janela que esconde na bandeja). O console de desenvolvimento continua existindo. Roadmap: Plano 5 pós-v1 (envio ao winget, assinatura de código).
 
 ## Documentação
 
 - Spec: `docs/superpowers/specs/2026-10-31-gapmouse-design.md`
 - Planos: `docs/superpowers/plans/`
-- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco, 0006 integração com o shell do Windows, 0007 distribuição e pipeline de release)
+- ADRs: `docs/adr/` (0001 Avalonia + AOT, 0002 movimento do cursor e power requests, 0003 sem build lite dependente de framework, 0004 núcleo funcional em thread dedicada, 0005 configurações, estado e logs em disco, 0006 integração com o shell do Windows, 0007 distribuição e pipeline de release, 0008 pausa com a tela bloqueada)
 - Design: `PRODUCT.md` (produto, público, tom) e `DESIGN.md` (sistema de design, com `.impeccable/design.json`) na raiz
 
 ## Projetos e responsabilidades
@@ -26,7 +26,7 @@ Estado atual: v1.1 (refresh visual: navegação em trilho lateral, face da Home 
   - `Startup/` — `IStartupRegistrar` e `StartWithWindowsService`;
   - `Updates/` — `IReleaseSource` e `UpdateService`.
 - `src/GapMouse.Infrastructure` — adaptadores Win32 em `Win32/`, fonte de aleatoriedade e implementações das portas do Plano 2: `Settings/` e `State/` (JSON com geração de código), `Logging/` (`FileActivityLog`), `Startup/` (chave Run do registro) e `Updates/` (`GitHubReleaseSource`).
-  - `Shell/` — integração com o shell: `ShellWindow` (janela de nível superior oculta), `Win32TrayIcon` (ícone e balões), `Win32GlobalHotkey` e `SingleInstance` (mutex + mensagem de ativação).
+  - `Shell/` — integração com o shell: `ShellWindow` (janela de nível superior oculta; recebe as notificações WTS de bloqueio da sessão), `Win32TrayIcon` (ícone e balões), `Win32GlobalHotkey` e `SingleInstance` (mutex + mensagem de ativação).
 - `src/GapMouse.App` — app desktop Avalonia 12 (Native AOT, `GapMouse.exe`):
   - `Views/` e `ViewModels/` — telas e view models; os view models **não** referenciam Avalonia (namespaces `GapMouse.App.ViewModels*` e `GapMouse.App.Localization`);
   - `Styles/` — `Tokens.axaml` (tokens de tema `Gm…Brush`, tokens de estado, raios, fontes e overrides dos botões Fluent no tema claro) e `Controls.axaml` (classes de texto/card/linha, template do `TabControl` em trilho lateral, `DropDownButton` de destaque); conversores em `Views/` (`LogKindBrushConverter`, `LogKindInkConverter`, `ProgressToSweepConverter`, `UpperCaseConverter`);
@@ -66,6 +66,9 @@ Estado atual: v1.1 (refresh visual: navegação em trilho lateral, face da Home 
 - O valor Run (`HKCU\...\Run`, nome `GapMouse`) gravado pelo instalador deve ser idêntico ao de `StartupCommand.For` (`"<dir>\GapMouse.exe" --minimized`); senão o app o reescreve ao iniciar.
 - O publish entrega `GapMouse.exe` mais 3 DLLs nativas, não um único exe (ADR 0007).
 - PRs do release-please não rodam o CI (tags e PRs criados com `GITHUB_TOKEN` não disparam workflows); o `release.yml` é chamado por `workflow_call`.
+- Pausa com a tela bloqueada (ADR 0008): o bloqueio é um indicador do motor, ortogonal à pausa manual; desbloquear restaura o estado anterior e nunca desfaz uma pausa manual. Uma pausa temporizada pode expirar bloqueada, sem mover o mouse.
+- Energia bloqueado: `PowerRequest.None` ou `KeepSystemAwake` (com `KeepAwakeWhileLocked`), nunca a tela; em pausa continua `None`. `SessionLocked.KeepAwake` só é verdadeiro sem pausa e com a opção ligada.
+- Bloqueado, o host usa `AdvanceLocked` e não lê cursor nem monitor. As notificações WTS chegam no `ShellWindow` (thread de UI) via `SessionLockChanged` e vão ao motor por `IEngineController.SetSessionLocked`; `ShellWindow.QueryIsSessionLocked` dá o estado inicial.
 - O `.gitignore` padrão ignora pastas `Win32/`; há negações (`!src/**/Win32/`, `!tests/**/Win32/`). Ao criar pastas `Win32/` fora de `src/` e `tests/`, ou se arquivos "sumirem" do `git status`, verifique isso.
 
 ## Build e testes
