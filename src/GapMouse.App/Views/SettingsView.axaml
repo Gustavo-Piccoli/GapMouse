@@ -10,27 +10,27 @@
         <StackPanel Spacing="2">
           <TextBlock Text="{Binding L.SettingsIdle}" />
           <TextBox Text="{Binding IdleText}" />
-          <TextBlock Text="{Binding IdleError}" Foreground="#EF4444" IsVisible="{Binding IdleError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding IdleError}" Classes="error" IsVisible="{Binding IdleError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
         <StackPanel Spacing="2">
           <TextBlock Text="{Binding L.SettingsCheck}" />
           <TextBox Text="{Binding CheckText}" />
-          <TextBlock Text="{Binding CheckError}" Foreground="#EF4444" IsVisible="{Binding CheckError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding CheckError}" Classes="error" IsVisible="{Binding CheckError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
         <StackPanel Spacing="2">
           <TextBlock Text="{Binding L.SettingsMin}" />
           <TextBox Text="{Binding MinText}" />
-          <TextBlock Text="{Binding MinError}" Foreground="#EF4444" IsVisible="{Binding MinError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding MinError}" Classes="error" IsVisible="{Binding MinError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
         <StackPanel Spacing="2">
           <TextBlock Text="{Binding L.SettingsMax}" />
           <TextBox Text="{Binding MaxText}" />
-          <TextBlock Text="{Binding MaxError}" Foreground="#EF4444" IsVisible="{Binding MaxError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding MaxError}" Classes="error" IsVisible="{Binding MaxError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
         <StackPanel Spacing="2">
           <TextBlock Text="{Binding L.SettingsAmplitude}" />
           <TextBox Text="{Binding AmplitudeText}" />
-          <TextBlock Text="{Binding AmplitudeError}" Foreground="#EF4444" IsVisible="{Binding AmplitudeError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding AmplitudeError}" Classes="error" IsVisible="{Binding AmplitudeError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
       </StackPanel>
       <StackPanel Spacing="8">
@@ -47,8 +47,8 @@
           <TextBlock Text="{Binding L.SettingsHotkey}" />
           <TextBox x:Name="HotkeyBox" Text="{Binding HotkeyText}" IsReadOnly="True" />
           <TextBlock Text="{Binding L.SettingsHotkeyHint}" Opacity="0.7" />
-          <TextBlock Text="{Binding HotkeyError}" Foreground="#EF4444" IsVisible="{Binding HotkeyError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-          <TextBlock Text="{Binding HotkeyWarning}" Foreground="#F59E0B" IsVisible="{Binding HotkeyWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding HotkeyError}" Classes="error" IsVisible="{Binding HotkeyError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding HotkeyWarning}" Classes="warning" IsVisible="{Binding HotkeyWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
       </StackPanel>
       <StackPanel Spacing="8">
@@ -75,7 +75,7 @@
         <StackPanel Spacing="2">
           <TextBlock Text="{Binding L.SettingsRetention}" />
           <TextBox Text="{Binding RetentionText}" />
-          <TextBlock Text="{Binding RetentionError}" Foreground="#EF4444" IsVisible="{Binding RetentionError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          <TextBlock Text="{Binding RetentionError}" Classes="error" IsVisible="{Binding RetentionError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="8">

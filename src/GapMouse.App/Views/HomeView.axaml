@@ -9,13 +9,13 @@
       <Setter Property="Width" Value="18" />
       <Setter Property="Height" Value="18" />
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="Fill" Value="#3B82F6" />
+      <Setter Property="Fill" Value="{DynamicResource GmStateWaitingBrush}" />
     </Style>
     <Style Selector="Ellipse.dot.moving">
-      <Setter Property="Fill" Value="#22C55E" />
+      <Setter Property="Fill" Value="{DynamicResource GmStateMovingBrush}" />
     </Style>
     <Style Selector="Ellipse.dot.paused">
-      <Setter Property="Fill" Value="#F59E0B" />
+      <Setter Property="Fill" Value="{DynamicResource GmStatePausedBrush}" />
     </Style>
     <Style Selector="TextBlock.label">
       <Setter Property="Opacity" Value="0.7" />

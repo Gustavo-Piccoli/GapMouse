@@ -6,6 +6,7 @@
              x:DataType="vm:LogsViewModel">
   <UserControl.Resources>
     <v:LogKindBrushConverter x:Key="KindBrush" />
+    <v:LogKindInkConverter x:Key="KindInk" />
   </UserControl.Resources>
   <DockPanel Margin="16">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
@@ -23,10 +24,13 @@
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:LogLineViewModel">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{Binding Time}" FontFamily="Consolas,monospace" />
-            <TextBlock Text="{Binding Tag}" Width="70" FontFamily="Consolas,monospace" FontWeight="SemiBold"
-                       Foreground="{Binding Kind, Converter={StaticResource KindBrush}}" />
-            <TextBlock Text="{Binding Message}" FontFamily="Consolas,monospace" />
+            <TextBlock Text="{Binding Time}" FontFamily="{DynamicResource GmFontMono}" Classes="muted" />
+            <Border Width="76" CornerRadius="{DynamicResource GmControlRadius}" Padding="0,1"
+                    Background="{Binding Kind, Converter={StaticResource KindBrush}}">
+              <TextBlock Text="{Binding Tag}" FontSize="11" FontWeight="SemiBold" TextAlignment="Center"
+                         Foreground="{Binding Kind, Converter={StaticResource KindInk}}" />
+            </Border>
+            <TextBlock Text="{Binding Message}" FontFamily="{DynamicResource GmFontMono}" />
           </StackPanel>
         </DataTemplate>
       </ListBox.ItemTemplate>
