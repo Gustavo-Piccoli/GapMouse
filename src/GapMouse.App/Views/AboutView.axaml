@@ -3,42 +3,58 @@
              xmlns:vm="using:GapMouse.App.ViewModels"
              x:Class="GapMouse.App.Views.AboutView"
              x:DataType="vm:AboutViewModel">
-  <ScrollViewer>
-    <StackPanel Margin="24" Spacing="12">
-      <TextBlock Text="{Binding L.AppName}" FontSize="28" FontWeight="SemiBold" />
-      <TextBlock>
-        <Run Text="{Binding L.AboutVersionLabel}" />
-        <Run Text="{Binding VersionText}" />
-      </TextBlock>
-      <TextBlock>
-        <Run Text="{Binding L.AboutLicenseLabel}" />
-        <Run Text="{Binding LicenseText}" />
-      </TextBlock>
-
-      <StackPanel Spacing="4">
-        <TextBlock Text="{Binding L.AboutRepositoryLabel}" FontWeight="SemiBold" />
-        <TextBlock Text="{Binding RepositoryUrl}" TextWrapping="Wrap" />
-        <Button Content="{Binding L.AboutOpenRepository}" Command="{Binding OpenRepositoryCommand}" />
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24" Spacing="16">
+      <StackPanel Orientation="Horizontal" Spacing="14">
+        <Image Source="avares://GapMouse/Assets/Icons/gapmouse.ico" Width="48" Height="48" />
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="{Binding L.AppName}" Classes="title" />
+          <TextBlock Classes="muted">
+            <Run Text="{Binding L.AboutVersionLabel}" />
+            <Run Text="{Binding VersionText}" />
+          </TextBlock>
+        </StackPanel>
       </StackPanel>
 
-      <StackPanel Spacing="4">
-        <TextBlock Text="{Binding L.AboutSettingsFileLabel}" FontWeight="SemiBold" />
-        <TextBlock Text="{Binding SettingsFilePath}" TextWrapping="Wrap" />
-        <Button Content="{Binding L.AboutOpenSettingsFolder}" Command="{Binding OpenSettingsFolderCommand}" />
-      </StackPanel>
-
-      <StackPanel Spacing="4">
-        <TextBlock Text="{Binding L.AboutLogsFolderLabel}" FontWeight="SemiBold" />
-        <TextBlock Text="{Binding LogsDirectory}" TextWrapping="Wrap" />
-        <Button Content="{Binding L.AboutOpenLogsFolder}" Command="{Binding OpenLogsFolderCommand}" />
-      </StackPanel>
-
-      <StackPanel Spacing="8">
-        <Button Content="{Binding L.AboutCheckUpdates}" Command="{Binding CheckUpdatesCommand}" />
-        <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" />
-        <Button Content="{Binding L.AboutOpenRelease}" Command="{Binding OpenReleaseCommand}"
-                IsVisible="{Binding AvailableReleaseUrl, Converter={x:Static ObjectConverters.IsNotNull}}" />
-      </StackPanel>
+      <Border Classes="card">
+        <StackPanel>
+          <Grid Classes="row" ColumnDefinitions="Auto,*" ColumnSpacing="16">
+            <TextBlock Text="{Binding L.AboutLicenseLabel}" Classes="muted" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding LicenseText}" FontWeight="SemiBold"
+                       TextAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Center" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="6">
+            <TextBlock Text="{Binding L.AboutRepositoryLabel}" Classes="muted" />
+            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding RepositoryUrl}" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Content="{Binding L.AboutOpenRepository}"
+                    Command="{Binding OpenRepositoryCommand}" VerticalAlignment="Center" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="6">
+            <TextBlock Text="{Binding L.AboutSettingsFileLabel}" Classes="muted" />
+            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding SettingsFilePath}" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Content="{Binding L.AboutOpenSettingsFolder}"
+                    Command="{Binding OpenSettingsFolderCommand}" VerticalAlignment="Center" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="6">
+            <TextBlock Text="{Binding L.AboutLogsFolderLabel}" Classes="muted" />
+            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding LogsDirectory}" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Content="{Binding L.AboutOpenLogsFolder}"
+                    Command="{Binding OpenLogsFolderCommand}" VerticalAlignment="Center" />
+          </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="8">
+            <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="{Binding L.AboutCheckUpdates}"
+                    Command="{Binding CheckUpdatesCommand}" VerticalAlignment="Center" />
+            <Button Grid.Row="1" Content="{Binding L.AboutOpenRelease}" Command="{Binding OpenReleaseCommand}"
+                    HorizontalAlignment="Left"
+                    IsVisible="{Binding AvailableReleaseUrl, Converter={x:Static ObjectConverters.IsNotNull}}" />
+          </Grid>
+        </StackPanel>
+      </Border>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

@@ -108,4 +108,16 @@ public sealed class LocalizerTests
         localizer.SetLanguage(UiLanguage.Portuguese);
         localizer.HomeRecentTitle.ShouldBe("Recentes");
     }
+
+    [Fact]
+    public void LogsEmpty_IsLocalized()
+    {
+        var localizer = Create();
+
+        localizer.SetLanguage(UiLanguage.English);
+        localizer.LogsEmpty.ShouldBe("No activity yet. Every start, movement, return and pause will appear here.");
+
+        localizer.SetLanguage(UiLanguage.Portuguese);
+        localizer.LogsEmpty.ShouldBe("Nenhuma atividade ainda. Cada início, movimento, retorno e pausa aparece aqui.");
+    }
 }

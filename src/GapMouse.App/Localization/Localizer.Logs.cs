@@ -18,6 +18,10 @@ public sealed partial class Localizer
 
     public string LogsClear => T("Clear", "Limpar");
 
+    public string LogsEmpty => T(
+        "No activity yet. Every start, movement, return and pause will appear here.",
+        "Nenhuma atividade ainda. Cada início, movimento, retorno e pausa aparece aqui.");
+
     public string LogEngineStarted => T("GapMouse started", "GapMouse iniciado");
 
     public string LogEngineStopped => T("GapMouse stopped", "GapMouse encerrado");
