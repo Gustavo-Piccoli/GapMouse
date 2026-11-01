@@ -46,7 +46,10 @@
           </Grid>
           <Border Classes="divider" />
           <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="8">
-            <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding L.AboutUpdatesLabel}" Classes="muted" VerticalAlignment="Center"
+                       IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
+            <TextBlock Text="{Binding UpdateStatus}" TextWrapping="Wrap" VerticalAlignment="Center"
+                       IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             <Button Grid.Column="1" Content="{Binding L.AboutCheckUpdates}"
                     Command="{Binding CheckUpdatesCommand}" VerticalAlignment="Center" />
             <Button Grid.Row="1" Content="{Binding L.AboutOpenRelease}" Command="{Binding OpenReleaseCommand}"

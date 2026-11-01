@@ -15,7 +15,7 @@ internal sealed record Scene(Localizer Localizer, MainWindowViewModel Main, IDis
 internal static class Scenarios
 {
     public static readonly string[] Names =
-        ["home-waiting", "home-moving", "home-paused", "logs", "logs-empty", "settings", "settings-status", "about", "custom-pause"];
+        ["home-waiting", "home-moving", "home-paused", "logs", "logs-empty", "logs-filtered", "settings", "settings-status", "about", "custom-pause"];
 
     // The fake clock uses UTC as its local zone, so every offset below is zero.
     private static readonly DateTimeOffset Now = new(2026, 11, 1, 14, 32, 10, TimeSpan.Zero);
@@ -23,7 +23,7 @@ internal static class Scenarios
     public static int TabIndex(string scenario) => scenario switch
     {
         "home-waiting" or "home-moving" or "home-paused" => 0,
-        "logs" or "logs-empty" => 1,
+        "logs" or "logs-empty" or "logs-filtered" => 1,
         "settings" or "settings-status" => 2,
         "about" => 3,
         _ => 0,
@@ -41,7 +41,7 @@ internal static class Scenarios
         var ui = new ImmediateUiDispatcher();
         var settings = new InMemorySettingsService { FailToWrite = scenario == "settings-status" };
         var log = new InMemoryActivityLog();
-        foreach (var entry in scenario == "logs-empty" ? [] : LogEntries())
+        foreach (var entry in scenario == "logs-empty" ? [] : LogEntries().Where(e => scenario != "logs-filtered" || e.Kind is not (LogKind.Paused or LogKind.Resumed)))
         {
             log.Append(entry);
         }
@@ -55,6 +55,11 @@ internal static class Scenarios
         home.Refresh();
         var logs = new LogsViewModel(l, log, ui, new NoopClipboardService(), new NoopShellLauncher(), paths.LogsDirectory);
         var settingsVm = new SettingsViewModel(l, settings);
+        if (scenario == "logs-filtered")
+        {
+            logs.FilterIndex = 2; // Pauses: the sample log has none once pauses are removed
+        }
+
         if (scenario == "settings-status")
         {
             settingsVm.IdleText = "121";

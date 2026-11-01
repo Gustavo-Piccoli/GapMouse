@@ -70,9 +70,16 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <TextBlock Classes="muted" Text="{Binding L.LogsEmpty}" TextWrapping="Wrap"
-                   TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Margin="24" IsVisible="{Binding !Lines.Count}" />
+        <Panel IsVisible="{Binding !Lines.Count}">
+          <TextBlock Classes="muted" Text="{Binding L.LogsEmpty}" TextWrapping="Wrap"
+                     TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Margin="24"
+                     IsVisible="{Binding !FilterIndex}" />
+          <TextBlock Classes="muted" Text="{Binding L.LogsEmptyFiltered}" TextWrapping="Wrap"
+                     TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Margin="24"
+                     IsVisible="{Binding !!FilterIndex}" />
+        </Panel>
       </Grid>
     </Border>
   </DockPanel>

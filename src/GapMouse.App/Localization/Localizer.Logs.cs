@@ -22,6 +22,8 @@ public sealed partial class Localizer
         "No activity yet. Every start, movement, return and pause will appear here.",
         "Nenhuma atividade ainda. Cada início, movimento, retorno e pausa aparece aqui.");
 
+    public string LogsEmptyFiltered => T("No entries match this filter.", "Nenhuma entrada corresponde a este filtro.");
+
     public string LogEngineStarted => T("GapMouse started", "GapMouse iniciado");
 
     public string LogEngineStopped => T("GapMouse stopped", "GapMouse encerrado");

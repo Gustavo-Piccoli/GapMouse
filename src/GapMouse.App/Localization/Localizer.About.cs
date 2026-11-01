@@ -20,6 +20,8 @@ public sealed partial class Localizer
 
     public string AboutOpenLogsFolder => T("Open logs folder", "Abrir pasta de logs");
 
+    public string AboutUpdatesLabel => T("Updates", "Atualizações");
+
     public string AboutCheckUpdates => T("Check for updates", "Verificar atualizações");
 
     public string AboutOpenRelease => T("Open release page", "Abrir página da versão");
