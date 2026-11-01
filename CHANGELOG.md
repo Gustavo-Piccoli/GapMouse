@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/Gustavo-Piccoli/GapMouse/compare/v1.2.0...v1.3.0) (2026-11-01)
+
+
+### Features
+
+* **installer:** add a desktop shortcut option ([d03eec5](https://github.com/Gustavo-Piccoli/GapMouse/commit/d03eec5fadcbb7f7952923ba262b9b390705ebe1))
+
 ## [1.2.0](https://github.com/Gustavo-Piccoli/GapMouse/compare/v1.1.0...v1.2.0) (2026-11-01)
 
 
