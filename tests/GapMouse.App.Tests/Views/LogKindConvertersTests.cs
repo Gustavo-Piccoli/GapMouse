@@ -16,7 +16,7 @@ public sealed class LogKindConvertersTests
     [Theory]
     [InlineData(LogKind.Start, "#475569", "#FFFFFF")]
     [InlineData(LogKind.Waiting, "#2F5FD0", "#FFFFFF")]
-    [InlineData(LogKind.Moving, "#17804A", "#FFFFFF")]
+    [InlineData(LogKind.Moving, "#157545", "#FFFFFF")]
     [InlineData(LogKind.Return, "#5B6474", "#FFFFFF")]
     [InlineData(LogKind.Paused, "#E3A21A", "#1F1503")]
     [InlineData(LogKind.Resumed, "#E3A21A", "#1F1503")]

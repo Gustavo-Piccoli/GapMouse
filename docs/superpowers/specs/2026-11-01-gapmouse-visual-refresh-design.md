@@ -81,7 +81,7 @@ Tokens (`SolidColorBrush`, chave `GmXxxBrush`), definidos em `Styles/Tokens.axam
 | Token | Escuro | Claro | Uso |
 |---|---|---|---|
 | `GmGroundBrush` | `#14161B` | `#F4F5F7` | fundo da área de conteúdo |
-| `GmRailBrush` | `#1C2130` | `#E6E9F0` | trilho de navegação (segunda camada neutra) |
+| `GmRailBrush` | `#0F1115` | `#E6E9F0` | trilho de navegação (mais escuro que o fundo, no mesmo matiz, como cartão-cartolina) |
 | `GmSurfaceBrush` | `#1B1E25` | `#FFFFFF` | cartões de grupo, linhas, lista do log |
 | `GmSurfaceHoverBrush` | `#232731` | `#EEF0F4` | hover de linhas e itens do rail |
 | `GmHairlineBrush` | `#2C313C` | `#D8DCE3` | divisórias e bordas (1 px) |
@@ -96,9 +96,19 @@ Campos de estado (iguais nos dois temas, cada um com sua tinta):
 
 | Estado | Campo | Tinta | Tinta secundária |
 |---|---|---|---|
-| Aguardando | `#2F5FD0` | `#FFFFFF` | `#D6E2FF` |
-| Movendo | `#17804A` | `#FFFFFF` | `#D3F5E2` |
+| Aguardando | `#2F5FD0` | `#FFFFFF` | `#E6EDFF` |
+| Movendo | `#157545` | `#FFFFFF` | `#D3F5E2` |
 | Pausado | `#E3A21A` | `#1F1503` | `#4A3407` |
+
+Botões neutros no tema claro (sobrescrevem as chaves do Fluent em `Tokens.axaml`, só no dicionário `Light`; o acento não muda):
+
+| Chave Fluent | Claro |
+|---|---|
+| `ButtonBackground` | `#FFFFFF` |
+| `ButtonBackgroundPointerOver` | `#F6F7F9` |
+| `ButtonBackgroundPressed` | `#EEF0F4` |
+| `ButtonBorderBrush`, `ButtonBorderBrushPointerOver`, `ButtonBorderBrushPressed` | `#D8DCE3` |
+| `ButtonBorderThemeThickness` | `1` |
 
 Paleta do Fluent: `FluentTheme.Palettes` com `ColorPaletteResources` para `Dark` e `Light`, `Accent` igual a
 `GmAccentBrush` e `RegionColor` igual a `GmGroundBrush`, para que ToggleSwitch, ComboBox, foco, seleção de texto e
@@ -111,7 +121,7 @@ e um segundo conversor devolve a tinta):
 |---|---|---|
 | START | `#475569` | `#FFFFFF` |
 | WAITING | `#2F5FD0` | `#FFFFFF` |
-| MOVING | `#17804A` | `#FFFFFF` |
+| MOVING | `#157545` | `#FFFFFF` |
 | RETURN | `#5B6474` | `#FFFFFF` |
 | PAUSED, RESUMED | `#E3A21A` | `#1F1503` |
 | CONFIG | `#6B5BD6` | `#FFFFFF` |

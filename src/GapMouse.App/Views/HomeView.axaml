@@ -62,6 +62,12 @@
       <Setter Property="Foreground" Value="{DynamicResource GmStatePausedInkSecondaryBrush}" />
     </Style>
 
+    <ContainerQuery Name="home" Query="max-width:460">
+      <Style Selector="ContentPresenter.face">
+        <Setter Property="Width" Value="176" />
+      </Style>
+    </ContainerQuery>
+
     <Style Selector="Ellipse.ring">
       <Setter Property="StrokeThickness" Value="6" />
     </Style>
@@ -95,14 +101,15 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid Margin="24" RowDefinitions="*,Auto" RowSpacing="16">
-    <Grid ColumnDefinitions="220,16,*">
+  <Grid Margin="24" RowDefinitions="*,Auto" RowSpacing="16" Container.Name="home" Container.Sizing="Width">
+    <Grid ColumnDefinitions="Auto,16,*">
       <ContentPresenter Classes="face"
               Classes.waiting="{Binding IsWaiting}"
               Classes.moving="{Binding IsMoving}"
               Classes.paused="{Binding IsPaused}">
         <Grid RowDefinitions="Auto,*,Auto">
-          <Grid Width="56" Height="56" HorizontalAlignment="Left" AutomationProperties.AccessibilityView="Raw">
+          <Grid Width="56" Height="56" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+            <Ellipse Margin="6" Fill="{DynamicResource GmGroundBrush}" />
             <Ellipse Classes="ring track" Stroke="{Binding $parent[ContentPresenter].Foreground}" />
             <shapes:Arc Classes="ring"
                         Stroke="{Binding $parent[ContentPresenter].Foreground}"
