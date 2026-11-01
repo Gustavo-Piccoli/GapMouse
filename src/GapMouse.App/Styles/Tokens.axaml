@@ -1,0 +1,55 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="GmGroundBrush" Color="#14161B" />
+      <SolidColorBrush x:Key="GmRailBrush" Color="#1C2130" />
+      <SolidColorBrush x:Key="GmSurfaceBrush" Color="#1B1E25" />
+      <SolidColorBrush x:Key="GmSurfaceHoverBrush" Color="#232731" />
+      <SolidColorBrush x:Key="GmHairlineBrush" Color="#2C313C" />
+      <SolidColorBrush x:Key="GmTextBrush" Color="#ECEEF2" />
+      <SolidColorBrush x:Key="GmTextMutedBrush" Color="#A0A8B6" />
+      <SolidColorBrush x:Key="GmAccentBrush" Color="#2F6FED" />
+      <SolidColorBrush x:Key="GmAccentTextBrush" Color="#8FB0FF" />
+      <SolidColorBrush x:Key="GmCriticalTextBrush" Color="#F87171" />
+      <SolidColorBrush x:Key="GmWarningTextBrush" Color="#FBBF24" />
+      <SolidColorBrush x:Key="GmStateWaitingBrush" Color="#2F5FD0" />
+      <SolidColorBrush x:Key="GmStateWaitingInkBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="GmStateWaitingInkSecondaryBrush" Color="#D6E2FF" />
+      <SolidColorBrush x:Key="GmStateMovingBrush" Color="#17804A" />
+      <SolidColorBrush x:Key="GmStateMovingInkBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="GmStateMovingInkSecondaryBrush" Color="#D3F5E2" />
+      <SolidColorBrush x:Key="GmStatePausedBrush" Color="#E3A21A" />
+      <SolidColorBrush x:Key="GmStatePausedInkBrush" Color="#1F1503" />
+      <SolidColorBrush x:Key="GmStatePausedInkSecondaryBrush" Color="#4A3407" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="GmGroundBrush" Color="#F4F5F7" />
+      <SolidColorBrush x:Key="GmRailBrush" Color="#E6E9F0" />
+      <SolidColorBrush x:Key="GmSurfaceBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="GmSurfaceHoverBrush" Color="#EEF0F4" />
+      <SolidColorBrush x:Key="GmHairlineBrush" Color="#D8DCE3" />
+      <SolidColorBrush x:Key="GmTextBrush" Color="#16181D" />
+      <SolidColorBrush x:Key="GmTextMutedBrush" Color="#576070" />
+      <SolidColorBrush x:Key="GmAccentBrush" Color="#2F5FD0" />
+      <SolidColorBrush x:Key="GmAccentTextBrush" Color="#2350B8" />
+      <SolidColorBrush x:Key="GmCriticalTextBrush" Color="#B42318" />
+      <SolidColorBrush x:Key="GmWarningTextBrush" Color="#9A5B00" />
+      <SolidColorBrush x:Key="GmStateWaitingBrush" Color="#2F5FD0" />
+      <SolidColorBrush x:Key="GmStateWaitingInkBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="GmStateWaitingInkSecondaryBrush" Color="#D6E2FF" />
+      <SolidColorBrush x:Key="GmStateMovingBrush" Color="#17804A" />
+      <SolidColorBrush x:Key="GmStateMovingInkBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="GmStateMovingInkSecondaryBrush" Color="#D3F5E2" />
+      <SolidColorBrush x:Key="GmStatePausedBrush" Color="#E3A21A" />
+      <SolidColorBrush x:Key="GmStatePausedInkBrush" Color="#1F1503" />
+      <SolidColorBrush x:Key="GmStatePausedInkSecondaryBrush" Color="#4A3407" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <CornerRadius x:Key="GmControlRadius">6</CornerRadius>
+  <CornerRadius x:Key="GmCardRadius">12</CornerRadius>
+  <FontFamily x:Key="GmFontText">Segoe UI Variable Text, Segoe UI</FontFamily>
+  <FontFamily x:Key="GmFontDisplay">Segoe UI Variable Display, Segoe UI</FontFamily>
+  <FontFamily x:Key="GmFontMono">Cascadia Mono, Consolas</FontFamily>
+</ResourceDictionary>
