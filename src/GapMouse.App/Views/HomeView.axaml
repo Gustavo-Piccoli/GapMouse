@@ -84,6 +84,9 @@
       <Setter Property="Margin" Value="16,6" />
       <Setter Property="MinHeight" Value="32" />
     </Style>
+    <Style Selector="TextBlock.inkSecondary">
+      <Setter Property="FontFeatures" Value="tnum" />
+    </Style>
     <Style Selector="TextBlock.value">
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="FontFeatures" Value="tnum" />
@@ -109,7 +112,12 @@
   </UserControl.Styles>
 
   <Grid Margin="24" RowDefinitions="*,Auto" RowSpacing="16" Container.Name="home" Container.Sizing="Width">
-    <Grid ColumnDefinitions="Auto,16,*">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="16" />
+        <ColumnDefinition Width="*" MaxWidth="480" />
+      </Grid.ColumnDefinitions>
       <ContentPresenter Classes="face"
               Classes.waiting="{Binding IsWaiting}"
               Classes.moving="{Binding IsMoving}"

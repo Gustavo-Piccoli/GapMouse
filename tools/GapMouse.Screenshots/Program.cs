@@ -59,11 +59,15 @@ static bool Capture(string scenario, UiLanguage language, int width, int height,
 {
     var scene = Scenarios.Build(scenario, language);
     Window window = scenario == "custom-pause"
-        ? new CustomPauseWindow { DataContext = new CustomPauseViewModel(scene.Localizer) }
+        ? new CustomPauseWindow { DataContext = new CustomPauseViewModel(scene.Localizer) { MinutesText = "abc" } } // invalid input, so the error line shows
         : new MainWindow { DataContext = scene.Main };
 
-    window.Width = width;
-    window.Height = height;
+    if (window is MainWindow)
+    {
+        window.Width = width;
+        window.Height = height;
+    }
+    // The custom-pause dialog keeps its real size (Width 340, SizeToContent height), so both size variants match.
     window.Show();
     if (window is MainWindow)
     {

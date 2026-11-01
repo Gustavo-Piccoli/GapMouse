@@ -120,4 +120,28 @@ public sealed class LocalizerTests
         localizer.SetLanguage(UiLanguage.Portuguese);
         localizer.LogsEmpty.ShouldBe("Nenhuma atividade ainda. Cada início, movimento, retorno e pausa aparece aqui.");
     }
+
+    [Fact]
+    public void LogsEmptyFiltered_IsLocalized()
+    {
+        var localizer = Create();
+
+        localizer.SetLanguage(UiLanguage.English);
+        localizer.LogsEmptyFiltered.ShouldBe("No entries match this filter.");
+
+        localizer.SetLanguage(UiLanguage.Portuguese);
+        localizer.LogsEmptyFiltered.ShouldBe("Nenhuma entrada corresponde a este filtro.");
+    }
+
+    [Fact]
+    public void AboutUpdatesLabel_IsLocalized()
+    {
+        var localizer = Create();
+
+        localizer.SetLanguage(UiLanguage.English);
+        localizer.AboutUpdatesLabel.ShouldBe("Updates");
+
+        localizer.SetLanguage(UiLanguage.Portuguese);
+        localizer.AboutUpdatesLabel.ShouldBe("Atualizações");
+    }
 }
