@@ -31,7 +31,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -56,6 +56,10 @@ jobs:
             tag="$REF_NAME"
           else
             tag="$INPUT_TAG"
+          fi
+          if [ "$EVENT" = "push" ] && [ "$REF_TYPE" = "branch" ] && [ -z "$tag" ]; then
+            echo "::error::Release invoked from a branch push without a tag input"
+            exit 1
           fi
           if [ "$EVENT" = "pull_request" ] || [ -z "$tag" ]; then
             echo "version=0.0.0-ci.$RUN_NUMBER" >> "$GITHUB_OUTPUT"
@@ -215,10 +219,13 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
         run: |
           set -euo pipefail
+          pre=()
+          if [[ "$VERSION" == *-* ]]; then pre=(--prerelease); fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
+            if [ "${#pre[@]}" -gt 0 ]; then gh release edit "$TAG" --prerelease; fi
           else
-            gh release create "$TAG" dist/* --title "GapMouse $VERSION" --generate-notes --verify-tag
+            gh release create "$TAG" dist/* --title "GapMouse $VERSION" --generate-notes --verify-tag "${pre[@]}"
           fi
 
   winget:

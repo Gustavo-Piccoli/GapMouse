@@ -14,6 +14,9 @@ if ($running.Count -gt 0) {
 }
 
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DBDB1941-7D22-4FE9-85C8-99227AAA11FE}_is1'
+if (Test-Path -LiteralPath $uninstallKey) {
+    throw 'A real GapMouse installation is present (uninstall key exists). Uninstall it first: this test would hijack or orphan it.'
+}
 $uninstallKeyMachine = $uninstallKey -replace '^HKCU:', 'HKLM:'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $runName = 'GapMouse'
@@ -122,8 +125,19 @@ try {
     Assert ($code -eq 0) "installer exit code is 0 (was $code)"
     $exe = Join-Path $dir 'GapMouse.exe'
     $started = Start-Process -FilePath $exe -ArgumentList '--minimized' -PassThru
-    Start-Sleep -Seconds 3
-    Assert (-not $started.HasExited) 'installed app is still running after 3 s'
+    $mutexReady = $false
+    $deadline = [DateTime]::UtcNow.AddSeconds(20)
+    while (-not $mutexReady -and [DateTime]::UtcNow -lt $deadline) {
+        if ($started.HasExited) { throw 'Installed app exited before creating its single-instance mutex' }
+        $m = $null
+        if ([System.Threading.Mutex]::TryOpenExisting('Local\GapMouse.SingleInstance', [ref]$m)) {
+            $m.Dispose()
+            $mutexReady = $true
+        }
+        else { Start-Sleep -Milliseconds 250 }
+    }
+    Assert $mutexReady 'app created its single-instance mutex within 20 s'
+    Assert (-not $started.HasExited) 'installed app is still running'
     # Inno preserves source timestamps, so a sentinel is needed to detect an overwrite.
     $sentinel = [DateTime]::SpecifyKind([DateTime]'2000-01-01T00:00:00', [DateTimeKind]::Utc)
     (Get-Item -LiteralPath $exe).LastWriteTimeUtc = $sentinel

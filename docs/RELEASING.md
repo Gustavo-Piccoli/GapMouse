@@ -9,12 +9,24 @@
    - `GapMouse-Setup-<version>-x64.exe` and `GapMouse-Setup-<version>-arm64.exe`
    - `GapMouse-<version>-x64-portable.zip` and `GapMouse-<version>-arm64-portable.zip`
    - `SHA256SUMS.txt`
-   Note: release-please publishes the GitHub release immediately; `release.yml` attaches the assets about 15 minutes later.
+   Note: release-please publishes the GitHub release immediately; `release.yml` attaches the assets a few minutes later (typically under 10).
 5. For stable versions (no `-` suffix), the `winget` job submits a manifest update with `wingetcreate`. It skips cleanly when the `WINGET_TOKEN` secret is not set.
 
 ### Manual tag fallback
 
 Push a tag `vX.Y.Z` (SemVer, `v` prefix) and `release.yml` runs the same pipeline. If the release already exists, the artifacts are uploaded to it (`--clobber`).
+
+### Recovering from a failed release
+
+If `release.yml` fails after release-please merged, the tag and an asset-less GitHub Release already exist, so the manual tag fallback does not apply. Instead, open the failed run and use "Re-run failed jobs", or run `gh workflow run release.yml -f tag=vX.Y.Z` (assets are uploaded with `--clobber`).
+
+### Pre-releases
+
+Tags like `vX.Y.Z-rc.N` are published as GitHub pre-releases and are skipped by the `winget` job.
+
+### Merging PRs
+
+Merge PRs with rebase, not squash, so commit footers such as `Release-As:` survive into the history release-please reads.
 
 ### Dry runs
 
