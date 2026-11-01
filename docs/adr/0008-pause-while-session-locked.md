@@ -1,44 +1,42 @@
-# 8. Pausa com a tela bloqueada
+# 8. Pause while the session is locked
 
 ## Context
 
-Com Win+L o GapMouse continuava movendo o mouse na cortina da tela de bloqueio e, na tela do
-PIN (área de trabalho segura), as chamadas ao cursor falhavam com acesso negado, gerando
-linhas `WARN Port Cursor failed` no log. Com a sessão bloqueada não há motivo para mexer o
-mouse; manter o PC acordado só faz sentido em casos específicos (um download longo, por
-exemplo).
+With Win+L, GapMouse kept moving the mouse over the lock screen curtain, and on the PIN
+screen (secure desktop) the cursor calls failed with access denied, producing
+`WARN Port Cursor failed` lines in the log. While the session is locked there is no reason to
+move the mouse; keeping the PC awake only makes sense in specific cases (a long download, for
+example).
 
 ## Decision
 
-- **O bloqueio é um indicador do motor, ortogonal ao estado.** `KeepAwakeEngine` ganha
-  `SetSessionLocked(bool, now)` (idempotente) e `AdvanceLocked(now)`, que só precisa do
-  horário: o host não lê cursor nem monitor enquanto bloqueado. Waiting, Moving e Paused
-  continuam existindo; desbloquear volta ao estado de antes, e uma pausa manual nunca é
-  desfeita.
-- **Energia bloqueado.** Por padrão o pedido de energia é solto (`PowerRequest.None`) e o
-  Windows segue o plano normal. Com `EngineSettings.KeepAwakeWhileLocked` (JSON
-  `keepAwakeWhileLocked`, padrão `false`) o motor pede `KeepSystemAwake`, nunca a tela. Em
-  pausa a energia continua `None`.
-- **Fluxo normal de eventos.** `SessionLocked(At, KeepAwake)` e `SessionUnlocked(At)` viram
-  as linhas `LOCKED` e `UNLOCKED` (`LogKind.Locked/Unlocked`). `KeepAwake` só é verdadeiro
-  quando não está pausado e a opção está ligada.
-- **Notificação no shell.** `ShellWindow` assina as notificações WTS de sessão, expõe
-  `SessionLockChanged` e `QueryIsSessionLocked()` (estado inicial); o app as encaminha a
-  `IEngineController.SetSessionLocked`, que é enfileirado para a thread do motor.
-- **Log.** A recuperação de porta passa a ser registrada em Warning (par da falha) e o
-  `ActivityLogger` deixou de repetir a mensagem da exceção.
+- **Locking is a flag in the engine, orthogonal to the state.** `KeepAwakeEngine` gains
+  `SetSessionLocked(bool, now)` (idempotent) and `AdvanceLocked(now)`, which needs only the
+  time: the host reads neither cursor nor monitor while locked. Waiting, Moving and Paused
+  still exist; unlocking returns to the previous state, and a manual pause is never undone.
+- **Power while locked.** By default the power request is released (`PowerRequest.None`) and
+  Windows follows its normal power plan. With `EngineSettings.KeepAwakeWhileLocked` (JSON
+  `keepAwakeWhileLocked`, default `false`) the engine asks for `KeepSystemAwake`, never the
+  display. While paused, power stays `None`.
+- **Normal event flow.** `SessionLocked(At, KeepAwake)` and `SessionUnlocked(At)` become the
+  `LOCKED` and `UNLOCKED` log lines (`LogKind.Locked/Unlocked`). `KeepAwake` is true only when
+  not paused and the option is on.
+- **Notification in the shell.** `ShellWindow` subscribes to WTS session notifications and
+  exposes `SessionLockChanged` and `QueryIsSessionLocked()` (initial state); the app forwards
+  them to `IEngineController.SetSessionLocked`, which is queued to the engine thread.
+- **Logging.** Port recovery is now logged at Warning (the pair of the failure) and
+  `ActivityLogger` no longer repeats the exception message.
 
 ## Alternatives
 
-- **B. Bloqueio no `EngineHost`.** Menos mudança no motor, mas a regra fica no código
-  imperativo, mais difícil de testar, e estatísticas e eventos ficam fora do fluxo.
-- **C. Reaproveitar Pausar/Retomar.** Descartada: desbloquear desfaria a pausa manual do
-  usuário.
+- **B. Lock handling in `EngineHost`.** Fewer engine changes, but the rule lives in
+  imperative code, is harder to test, and statistics and events fall outside the normal flow.
+- **C. Reuse Pause/Resume.** Rejected: unlocking would undo the user's manual pause.
 
 ## Consequences
 
-- Nenhuma linha WARN de cursor esperada durante o bloqueio.
-- Uma pausa temporizada pode expirar bloqueada, sem mover o mouse até desbloquear.
-- Com a opção ligada só o sistema fica acordado; a tela pode apagar.
-- O DevConsole não detecta bloqueio (não tem janela de mensagens).
-- Arquivos de configurações antigos, sem o campo novo, assumem o padrão.
+- No cursor WARN lines are expected while locked.
+- A timed pause can expire while locked, without moving the mouse until unlock.
+- With the option on, only the system stays awake; the display can turn off.
+- The DevConsole does not detect locking (it has no message window).
+- Old settings files without the new field fall back to the default.
