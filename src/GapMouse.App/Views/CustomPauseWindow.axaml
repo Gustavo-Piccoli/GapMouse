@@ -14,8 +14,8 @@
     <TextBox Text="{Binding MinutesText, Mode=TwoWay}" />
     <TextBlock Text="{Binding Error}" Classes="error" MinHeight="18" />
     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-      <Button Classes="accent" Content="{Binding L.Ok}" IsDefault="True" IsEnabled="{Binding CanConfirm}" Click="OnOk" />
-      <Button Content="{Binding L.Cancel}" IsCancel="True" Click="OnCancel" />
+      <Button Classes="accent" MinWidth="80" Content="{Binding L.Ok}" IsDefault="True" IsEnabled="{Binding CanConfirm}" Click="OnOk" />
+      <Button MinWidth="80" Content="{Binding L.Cancel}" IsCancel="True" Click="OnCancel" />
     </StackPanel>
   </StackPanel>
 </Window>

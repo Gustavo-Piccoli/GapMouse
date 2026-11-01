@@ -11,7 +11,7 @@ public sealed class LogKindBrushConverter : IValueConverter
 {
     private static readonly IBrush Slate = Solid("#475569");
     private static readonly IBrush Blue = Solid("#2F5FD0");
-    private static readonly IBrush Green = Solid("#17804A");
+    private static readonly IBrush Green = Solid("#157545");
     private static readonly IBrush Gray = Solid("#5B6474");
     private static readonly IBrush Amber = Solid("#E3A21A");
     private static readonly IBrush Violet = Solid("#6B5BD6");

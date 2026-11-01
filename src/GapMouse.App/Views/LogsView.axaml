@@ -21,27 +21,27 @@
     </Style>
   </UserControl.Styles>
   <DockPanel Margin="24">
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
-      <ComboBox SelectedIndex="{Binding FilterIndex}" MinWidth="116">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Margin="0,0,0,12">
+      <ComboBox SelectedIndex="{Binding FilterIndex}" MinWidth="96">
         <ComboBoxItem Content="{Binding L.LogsFilterAll}" />
         <ComboBoxItem Content="{Binding L.LogsFilterMovement}" />
         <ComboBoxItem Content="{Binding L.LogsFilterPauses}" />
         <ComboBoxItem Content="{Binding L.LogsFilterSystem}" />
       </ComboBox>
       <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
-        <Button Padding="10,5" Command="{Binding CopyCommand}">
+        <Button Padding="10,5" Command="{Binding CopyCommand}" ToolTip.Tip="{Binding L.LogsCopy}">
           <StackPanel Orientation="Horizontal" Spacing="6">
             <TextBlock Classes="icon" Text="&#xE8C8;" />
             <TextBlock Text="{Binding L.LogsCopy}" />
           </StackPanel>
         </Button>
-        <Button Padding="10,5" Command="{Binding OpenFolderCommand}">
+        <Button Padding="10,5" Command="{Binding OpenFolderCommand}" ToolTip.Tip="{Binding L.LogsOpenFolder}">
           <StackPanel Orientation="Horizontal" Spacing="6">
             <TextBlock Classes="icon" Text="&#xE838;" />
             <TextBlock Text="{Binding L.LogsOpenFolder}" />
           </StackPanel>
         </Button>
-        <Button Padding="10,5" Command="{Binding ClearCommand}">
+        <Button Padding="10,5" Command="{Binding ClearCommand}" ToolTip.Tip="{Binding L.LogsClear}">
           <StackPanel Orientation="Horizontal" Spacing="6">
             <TextBlock Classes="icon" Text="&#xE74D;" />
             <TextBlock Text="{Binding L.LogsClear}" />

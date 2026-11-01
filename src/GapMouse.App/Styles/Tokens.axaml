@@ -3,7 +3,7 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="GmGroundBrush" Color="#14161B" />
-      <SolidColorBrush x:Key="GmRailBrush" Color="#1C2130" />
+      <SolidColorBrush x:Key="GmRailBrush" Color="#0F1115" />
       <SolidColorBrush x:Key="GmSurfaceBrush" Color="#1B1E25" />
       <SolidColorBrush x:Key="GmSurfaceHoverBrush" Color="#232731" />
       <SolidColorBrush x:Key="GmHairlineBrush" Color="#2C313C" />
@@ -15,8 +15,8 @@
       <SolidColorBrush x:Key="GmWarningTextBrush" Color="#FBBF24" />
       <SolidColorBrush x:Key="GmStateWaitingBrush" Color="#2F5FD0" />
       <SolidColorBrush x:Key="GmStateWaitingInkBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="GmStateWaitingInkSecondaryBrush" Color="#D6E2FF" />
-      <SolidColorBrush x:Key="GmStateMovingBrush" Color="#17804A" />
+      <SolidColorBrush x:Key="GmStateWaitingInkSecondaryBrush" Color="#E6EDFF" />
+      <SolidColorBrush x:Key="GmStateMovingBrush" Color="#157545" />
       <SolidColorBrush x:Key="GmStateMovingInkBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="GmStateMovingInkSecondaryBrush" Color="#D3F5E2" />
       <SolidColorBrush x:Key="GmStatePausedBrush" Color="#E3A21A" />
@@ -37,13 +37,20 @@
       <SolidColorBrush x:Key="GmWarningTextBrush" Color="#9A5B00" />
       <SolidColorBrush x:Key="GmStateWaitingBrush" Color="#2F5FD0" />
       <SolidColorBrush x:Key="GmStateWaitingInkBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="GmStateWaitingInkSecondaryBrush" Color="#D6E2FF" />
-      <SolidColorBrush x:Key="GmStateMovingBrush" Color="#17804A" />
+      <SolidColorBrush x:Key="GmStateWaitingInkSecondaryBrush" Color="#E6EDFF" />
+      <SolidColorBrush x:Key="GmStateMovingBrush" Color="#157545" />
       <SolidColorBrush x:Key="GmStateMovingInkBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="GmStateMovingInkSecondaryBrush" Color="#D3F5E2" />
       <SolidColorBrush x:Key="GmStatePausedBrush" Color="#E3A21A" />
       <SolidColorBrush x:Key="GmStatePausedInkBrush" Color="#1F1503" />
       <SolidColorBrush x:Key="GmStatePausedInkSecondaryBrush" Color="#4A3407" />
+      <SolidColorBrush x:Key="ButtonBackground" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#F6F7F9" />
+      <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#EEF0F4" />
+      <SolidColorBrush x:Key="ButtonBorderBrush" Color="#D8DCE3" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#D8DCE3" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#D8DCE3" />
+      <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

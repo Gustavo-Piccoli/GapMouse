@@ -26,21 +26,21 @@
           <Border Classes="divider" />
           <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="6">
             <TextBlock Text="{Binding L.AboutRepositoryLabel}" Classes="muted" />
-            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding RepositoryUrl}" TextWrapping="Wrap" />
+            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding RepositoryUrl}" FontSize="12" Classes="muted" TextWrapping="Wrap" />
             <Button Grid.Column="1" Content="{Binding L.AboutOpenRepository}"
                     Command="{Binding OpenRepositoryCommand}" VerticalAlignment="Center" />
           </Grid>
           <Border Classes="divider" />
           <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="6">
             <TextBlock Text="{Binding L.AboutSettingsFileLabel}" Classes="muted" />
-            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding SettingsFilePath}" TextWrapping="Wrap" />
+            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding SettingsFilePath}" FontSize="12" Classes="muted" TextWrapping="Wrap" />
             <Button Grid.Column="1" Content="{Binding L.AboutOpenSettingsFolder}"
                     Command="{Binding OpenSettingsFolderCommand}" VerticalAlignment="Center" />
           </Grid>
           <Border Classes="divider" />
           <Grid Classes="row" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="6">
             <TextBlock Text="{Binding L.AboutLogsFolderLabel}" Classes="muted" />
-            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding LogsDirectory}" TextWrapping="Wrap" />
+            <SelectableTextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding LogsDirectory}" FontSize="12" Classes="muted" TextWrapping="Wrap" />
             <Button Grid.Column="1" Content="{Binding L.AboutOpenLogsFolder}"
                     Command="{Binding OpenLogsFolderCommand}" VerticalAlignment="Center" />
           </Grid>
