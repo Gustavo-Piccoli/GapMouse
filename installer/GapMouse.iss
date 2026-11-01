@@ -36,12 +36,14 @@ SolidCompression=yes
 WizardStyle=modern
 AppMutex=GapMouse.SingleInstance
 VersionInfoVersion={#NumericVersion}
-#if Arch == "arm64"
+#if Arch == "x64"
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+#elif Arch == "arm64"
 ArchitecturesAllowed=arm64
 ArchitecturesInstallIn64BitMode=arm64
 #else
-ArchitecturesAllowed=x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
+  #error Arch must be x64 or arm64
 #endif
 
 [Languages]

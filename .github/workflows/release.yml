@@ -23,6 +23,8 @@ on:
       - 'installer/**'
       - '.github/workflows/release.yml'
       - 'Directory.Packages.props'
+      - 'Directory.Build.props'
+      - 'global.json'
       - 'src/GapMouse.App/GapMouse.App.csproj'
 
 permissions:
@@ -224,12 +226,12 @@ jobs:
     if: needs.version.outputs.dry_run == 'false' && !contains(needs.version.outputs.version, '-')
     needs: [version, publish]
     runs-on: windows-latest
-    env:
-      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     steps:
       # Secrets cannot be used in step conditions, so gate on a step output instead.
       - id: gate
         shell: pwsh
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
           if ([string]::IsNullOrEmpty($env:WINGET_TOKEN)) {
             Write-Host '::notice::WINGET_TOKEN not set; skipping winget update'
@@ -247,6 +249,7 @@ jobs:
         env:
           VERSION: ${{ needs.version.outputs.version }}
           TAG: ${{ needs.version.outputs.tag }}
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
           $base = "https://github.com/Gustavo-Piccoli/GapMouse/releases/download/$env:TAG"
           $x64 = "$base/GapMouse-Setup-$env:VERSION-x64.exe|x64"

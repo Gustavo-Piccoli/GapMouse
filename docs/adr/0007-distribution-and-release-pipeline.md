@@ -14,7 +14,7 @@ for x64 and ARM64, without admin rights and without a code-signing certificate i
 - **Ship the publish folder, not a true single file.** The package is `GapMouse.exe` plus
   three native DLLs (`av_libglesv2.dll`, `libHarfBuzzSharp.dll`, `libSkiaSharp.dll`).
   Avalonia's ANGLE, HarfBuzz and Skia natives cannot be linked into the AOT exe. This
-  deviates from spec section 6 ("um unico .exe") on purpose.
+  deviates from spec section 6 ("um único .exe") on purpose.
 - **Native ARM64 builds.** ARM64 is built on the `windows-11-arm` hosted runner and its
   installer is smoke-tested there; it is part of every release.
 - **Scripts double as tests.** Pester 5 is not available locally, so `build/Test-*.ps1`

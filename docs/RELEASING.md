@@ -9,6 +9,7 @@
    - `GapMouse-Setup-<version>-x64.exe` and `GapMouse-Setup-<version>-arm64.exe`
    - `GapMouse-<version>-x64-portable.zip` and `GapMouse-<version>-arm64-portable.zip`
    - `SHA256SUMS.txt`
+   Note: release-please publishes the GitHub release immediately; `release.yml` attaches the assets about 15 minutes later.
 5. For stable versions (no `-` suffix), the `winget` job submits a manifest update with `wingetcreate`. It skips cleanly when the `WINGET_TOKEN` secret is not set.
 
 ### Manual tag fallback
@@ -17,7 +18,7 @@ Push a tag `vX.Y.Z` (SemVer, `v` prefix) and `release.yml` runs the same pipelin
 
 ### Dry runs
 
-A dry run builds and tests everything but publishes nothing (version `0.0.0-ci.<run_number>`). It happens on pull requests touching packaging files (`build/**`, `installer/**`, `release.yml`, `Directory.Packages.props`, `GapMouse.App.csproj`) and on `workflow_dispatch` with an empty tag. The `publish` and `winget` jobs are skipped.
+A dry run builds and tests everything but publishes nothing (version `0.0.0-ci.<run_number>`). It happens on pull requests touching packaging files (`build/**`, `installer/**`, `release.yml`, `Directory.Packages.props`, `Directory.Build.props`, `global.json`, `GapMouse.App.csproj`) and on `workflow_dispatch` with an empty tag. The `publish` and `winget` jobs are skipped.
 
 ## Local packaging
 
@@ -45,8 +46,8 @@ Notes:
 
 ## Manual steps after v1 (owner)
 
-1. Create a classic personal access token with the `public_repo` scope and save it as the repository secret `WINGET_TOKEN`.
-2. Make the first winget submission by hand: run `wingetcreate new <x64 installer url> <arm64 installer url>` (installer type inno, scope user), then open a PR to `microsoft/winget-pkgs`. The package ID is `GustavoPiccoli.GapMouse`. Later versions are automated by the `winget` job.
+1. Make the first winget submission by hand: run `wingetcreate new <x64 installer url> <arm64 installer url>` (installer type inno, scope user), then open a PR to `microsoft/winget-pkgs`. The package ID is `GustavoPiccoli.GapMouse`. `wingetcreate update` later needs the same number of installer URLs (2: x64 and arm64) as the existing manifest, which the `winget` job already passes.
+2. Only after that first submission is merged into `microsoft/winget-pkgs`, create a classic personal access token with the `public_repo` scope and save it as the repository secret `WINGET_TOKEN`. Adding it earlier makes the `winget` job of the next stable release fail, because the package does not exist yet. Later versions are automated by the `winget` job.
 3. Apply to the SignPath Foundation for free code signing. v1 is unsigned.
 
 ## Verifying downloads with SHA256SUMS.txt
