@@ -17,6 +17,7 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
     private string _tooltip = string.Empty;
     private string? _balloonTag;
     private bool _disposed;
+    private bool _desired;
 
     public Win32TrayIcon(ShellWindow window, IReadOnlyDictionary<TrayIconState, byte[]> icoFiles)
     {
@@ -37,11 +38,15 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
 
     internal int ReaddCount { get; private set; }
 
+    /// <summary>Test seam: makes the next add attempt fail as if the taskbar did not exist yet.</summary>
+    internal bool FailNextAdd { get; set; }
+
     public void SetState(TrayIconState state, string tooltip)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _state = state;
         _tooltip = tooltip ?? string.Empty;
+        _desired = true;
         if (IsAdded)
         {
             var data = NewData(NIF_ICON | NIF_TIP | NIF_SHOWTIP);
@@ -106,6 +111,7 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
         }
 
         _disposed = true;
+        _desired = false;
         _window.MessageReceived -= OnMessage;
         if (IsAdded)
         {
@@ -166,19 +172,26 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
         return data;
     }
 
-    private void Add()
+    private bool Add()
     {
+        if (FailNextAdd)
+        {
+            FailNextAdd = false;
+            return false;
+        }
+
         var data = NewData(NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP);
         data.uCallbackMessage = CallbackMessage;
         Fill(ref data);
         if (!Shell_NotifyIconW(NIM_ADD, in data))
         {
-            return;
+            return false;
         }
 
         data.uTimeoutOrVersion = NOTIFYICON_VERSION_4;
         Shell_NotifyIconW(NIM_SETVERSION, in data);
         IsAdded = true;
+        return true;
     }
 
     private void Fill(ref NOTIFYICONDATAW data)
@@ -218,11 +231,17 @@ public sealed unsafe class Win32TrayIcon : ITrayIcon
     {
         if (msg == ShellWindow.TaskbarCreatedMessage)
         {
-            if (IsAdded)
+            if (_desired)
             {
+                // Drop any stale entry first so the add cannot fail as a duplicate.
+                var stale = NewData(0);
+                stale.hWnd = _window.Handle;
+                Shell_NotifyIconW(NIM_DELETE, in stale);
                 IsAdded = false;
-                Add();
-                ReaddCount++;
+                if (Add())
+                {
+                    ReaddCount++;
+                }
             }
 
             return;

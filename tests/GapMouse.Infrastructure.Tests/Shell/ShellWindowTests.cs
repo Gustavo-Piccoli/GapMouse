@@ -85,4 +85,22 @@ public sealed class ShellWindowTests
 
         ShellTestNative.IsWindow(handle).ShouldBeFalse();
     }
+
+    [Fact]
+    public void ThrowingHandler_RaisesHandlerFailedAndQueryEndSessionStillReturnsOne()
+    {
+        using var window = new ShellWindow();
+        Exception? failure = null;
+        window.HandlerFailed += e => failure = e;
+        window.ActivationRequested += (_, _) => throw new InvalidOperationException("boom");
+
+        ShellTestNative.SendMessageW(window.Handle, ShellTestNative.RegisterWindowMessageW("GapMouse.Activate"), 0, 0);
+        failure.ShouldBeOfType<InvalidOperationException>();
+
+        failure = null;
+        window.HandlerFailed += _ => throw new InvalidOperationException("reporter fails too");
+        ShellTestNative.SendMessageW(window.Handle, ShellTestNative.RegisterWindowMessageW("GapMouse.Activate"), 0, 0);
+        failure.ShouldNotBeNull();
+        ShellTestNative.SendMessageW(window.Handle, 0x0011, 0, 0).ShouldBe(1);
+    }
 }
