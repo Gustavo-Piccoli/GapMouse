@@ -24,6 +24,8 @@ public sealed partial class Localizer
 
     public string HomeTodayTitle => T("Today", "Hoje");
 
+    public string HomeRecentTitle => T("Recent", "Recentes");
+
     public string HomeActiveTimeLabel => T("Active time", "Tempo ativo");
 
     public string HomeActivationsLabel => T("Activations", "Ativações");

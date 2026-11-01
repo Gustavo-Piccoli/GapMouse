@@ -2,65 +2,199 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GapMouse.App.ViewModels"
              xmlns:svc="using:GapMouse.App.Services"
+             xmlns:v="using:GapMouse.App.Views"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
              x:Class="GapMouse.App.Views.HomeView"
              x:DataType="vm:HomeViewModel">
+  <UserControl.Resources>
+    <v:ProgressToSweepConverter x:Key="Sweep" />
+    <v:UpperCaseConverter x:Key="Upper" />
+  </UserControl.Resources>
   <UserControl.Styles>
-    <Style Selector="Ellipse.dot">
-      <Setter Property="Width" Value="18" />
-      <Setter Property="Height" Value="18" />
+    <!-- Door-hanger face: one fill per state, with its own ink. The flip plays when a state class becomes active. -->
+    <Style Selector="Border.face">
+      <Setter Property="Width" Value="220" />
+      <Setter Property="CornerRadius" Value="{DynamicResource GmCardRadius}" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="RenderTransform">
+        <ScaleTransform ScaleX="1" ScaleY="1" />
+      </Setter>
+    </Style>
+    <Style Selector="Border.face.waiting">
+      <Setter Property="Background" Value="{DynamicResource GmStateWaitingBrush}" />
+      <Style.Animations>
+        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.face.moving">
+      <Setter Property="Background" Value="{DynamicResource GmStateMovingBrush}" />
+      <Style.Animations>
+        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.face.paused">
+      <Setter Property="Background" Value="{DynamicResource GmStatePausedBrush}" />
+      <Style.Animations>
+        <Animation Duration="0:0:0.22" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%"><Setter Property="ScaleTransform.ScaleX" Value="0.3" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="ScaleTransform.ScaleX" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <Style Selector="Border.face.waiting TextBlock.ink">
+      <Setter Property="Foreground" Value="{DynamicResource GmStateWaitingInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.waiting TextBlock.inkSecondary">
+      <Setter Property="Foreground" Value="{DynamicResource GmStateWaitingInkSecondaryBrush}" />
+    </Style>
+    <Style Selector="Border.face.waiting Ellipse.ring">
+      <Setter Property="Stroke" Value="{DynamicResource GmStateWaitingInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.waiting shapes|Arc.ring">
+      <Setter Property="Stroke" Value="{DynamicResource GmStateWaitingInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.moving TextBlock.ink">
+      <Setter Property="Foreground" Value="{DynamicResource GmStateMovingInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.moving TextBlock.inkSecondary">
+      <Setter Property="Foreground" Value="{DynamicResource GmStateMovingInkSecondaryBrush}" />
+    </Style>
+    <Style Selector="Border.face.moving Ellipse.ring">
+      <Setter Property="Stroke" Value="{DynamicResource GmStateMovingInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.moving shapes|Arc.ring">
+      <Setter Property="Stroke" Value="{DynamicResource GmStateMovingInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.paused TextBlock.ink">
+      <Setter Property="Foreground" Value="{DynamicResource GmStatePausedInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.paused TextBlock.inkSecondary">
+      <Setter Property="Foreground" Value="{DynamicResource GmStatePausedInkSecondaryBrush}" />
+    </Style>
+    <Style Selector="Border.face.paused Ellipse.ring">
+      <Setter Property="Stroke" Value="{DynamicResource GmStatePausedInkBrush}" />
+    </Style>
+    <Style Selector="Border.face.paused shapes|Arc.ring">
+      <Setter Property="Stroke" Value="{DynamicResource GmStatePausedInkBrush}" />
+    </Style>
+
+    <Style Selector="Ellipse.ring">
+      <Setter Property="StrokeThickness" Value="6" />
+    </Style>
+    <Style Selector="Ellipse.ring.track">
+      <Setter Property="Opacity" Value="0.25" />
+    </Style>
+    <Style Selector="shapes|Arc.ring">
+      <Setter Property="StrokeThickness" Value="6" />
+      <Setter Property="StrokeLineCap" Value="Round" />
+      <Setter Property="StartAngle" Value="-90" />
+    </Style>
+
+    <Style Selector="Grid.stat">
+      <Setter Property="Margin" Value="16,6" />
+      <Setter Property="MinHeight" Value="32" />
+    </Style>
+    <Style Selector="TextBlock.value">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontFeatures" Value="tnum" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="Fill" Value="{DynamicResource GmStateWaitingBrush}" />
     </Style>
-    <Style Selector="Ellipse.dot.moving">
-      <Setter Property="Fill" Value="{DynamicResource GmStateMovingBrush}" />
+    <Style Selector="TextBlock.statLabel">
+      <Setter Property="Foreground" Value="{DynamicResource GmTextMutedBrush}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
-    <Style Selector="Ellipse.dot.paused">
-      <Setter Property="Fill" Value="{DynamicResource GmStatePausedBrush}" />
-    </Style>
-    <Style Selector="TextBlock.label">
-      <Setter Property="Opacity" Value="0.7" />
+    <Style Selector="Button.quiet">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource GmTextMutedBrush}" />
     </Style>
   </UserControl.Styles>
 
-  <StackPanel Margin="24" Spacing="16">
-    <StackPanel Orientation="Horizontal" Spacing="12">
-      <Ellipse Classes="dot"
-               Classes.moving="{Binding IsMoving}"
-               Classes.paused="{Binding IsPaused}" />
-      <TextBlock Text="{Binding StateText}" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center" />
-    </StackPanel>
+  <Grid Margin="24" RowDefinitions="*,Auto" RowSpacing="16">
+    <Grid ColumnDefinitions="220,16,*">
+      <Border Classes="face"
+              Classes.waiting="{Binding IsWaiting}"
+              Classes.moving="{Binding IsMoving}"
+              Classes.paused="{Binding IsPaused}">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+          <Grid Width="56" Height="56" HorizontalAlignment="Left" AutomationProperties.AccessibilityView="Raw">
+            <Ellipse Classes="ring track" />
+            <shapes:Arc Classes="ring"
+                        SweepAngle="{Binding IdleProgress, Converter={StaticResource Sweep}}"
+                        IsVisible="{Binding !IsPaused}" />
+          </Grid>
+          <StackPanel Grid.Row="2" Spacing="4">
+            <Viewbox Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left">
+              <TextBlock Classes="ink"
+                         Text="{Binding StateText, Converter={StaticResource Upper}}"
+                         FontFamily="{DynamicResource GmFontDisplay}"
+                         FontSize="30" FontWeight="Bold" LetterSpacing="0.6" />
+            </Viewbox>
+            <TextBlock Classes="inkSecondary" Text="{Binding IdleText}" TextWrapping="Wrap" />
+            <TextBlock Classes="inkSecondary" Text="{Binding PauseText}" TextWrapping="Wrap"
+                       IsVisible="{Binding HasPauseText}" />
+          </StackPanel>
+        </Grid>
+      </Border>
 
-    <StackPanel Spacing="6">
-      <TextBlock Text="{Binding IdleText}" />
-      <ProgressBar Minimum="0" Maximum="1" Value="{Binding IdleProgress}" />
-      <TextBlock Text="{Binding PauseText}" IsVisible="{Binding HasPauseText}" />
-    </StackPanel>
+      <StackPanel Grid.Column="2" Spacing="16">
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="group" Text="{Binding L.HomeTodayTitle}" Margin="16,12,16,4" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeActiveTimeLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding TodayActiveTime}" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeActivationsLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding TodayActivations}" />
+            </Grid>
+          </StackPanel>
+        </Border>
 
-    <Grid ColumnDefinitions="Auto,16,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-      <TextBlock Grid.Row="0" Classes="label" Text="{Binding L.HomeStartedLabel}" />
-      <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding StartedText}" />
-      <TextBlock Grid.Row="1" Classes="label" Text="{Binding L.HomeLastMovementLabel}" />
-      <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding LastMovementText}" />
-      <TextBlock Grid.Row="2" Classes="label" Text="{Binding L.HomeLastReturnLabel}" />
-      <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding LastReturnText}" />
-      <TextBlock Grid.Row="3" Classes="label" Text="{Binding L.HomeLastPauseLabel}" />
-      <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding LastPauseText}" />
-      <TextBlock Grid.Row="4" Classes="label" Text="{Binding L.HomeLastResumeLabel}" />
-      <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding LastResumeText}" />
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="group" Text="{Binding L.HomeRecentTitle}" Margin="16,12,16,4" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeStartedLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding StartedText}" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeLastMovementLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding LastMovementText}" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeLastReturnLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding LastReturnText}" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeLastPauseLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding LastPauseText}" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="stat" ColumnDefinitions="*,Auto">
+              <TextBlock Classes="statLabel" Text="{Binding L.HomeLastResumeLabel}" />
+              <TextBlock Classes="value" Grid.Column="1" Text="{Binding LastResumeText}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
     </Grid>
 
-    <StackPanel Spacing="4">
-      <TextBlock Text="{Binding L.HomeTodayTitle}" FontWeight="SemiBold" />
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Classes="label" Text="{Binding L.HomeActiveTimeLabel}" />
-        <TextBlock Text="{Binding TodayActiveTime}" />
-        <TextBlock Classes="label" Text="{Binding L.HomeActivationsLabel}" Margin="16,0,0,0" />
-        <TextBlock Text="{Binding TodayActivations}" />
-      </StackPanel>
-    </StackPanel>
-
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <DropDownButton Content="{Binding L.HomePause}" IsVisible="{Binding !IsPaused}">
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto">
+      <DropDownButton Classes="accent" Content="{Binding L.HomePause}" IsVisible="{Binding !IsPaused}">
         <DropDownButton.Flyout>
           <MenuFlyout>
             <MenuItem Header="{Binding L.PauseTenMinutes}" Command="{Binding PauseCommand}"
@@ -76,8 +210,9 @@
           </MenuFlyout>
         </DropDownButton.Flyout>
       </DropDownButton>
-      <Button Content="{Binding L.HomeResume}" Command="{Binding ResumeCommand}" IsVisible="{Binding IsPaused}" />
-      <Button Content="{Binding L.HomeExit}" Command="{Binding ExitCommand}" />
-    </StackPanel>
-  </StackPanel>
+      <Button Classes="accent" Content="{Binding L.HomeResume}" Command="{Binding ResumeCommand}"
+              IsVisible="{Binding IsPaused}" />
+      <Button Grid.Column="2" Classes="quiet" Content="{Binding L.HomeExit}" Command="{Binding ExitCommand}" />
+    </Grid>
+  </Grid>
 </UserControl>
