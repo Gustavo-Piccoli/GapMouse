@@ -1,88 +1,74 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using GapMouse.App.Localization;
+using GapMouse.App.Composition;
+using GapMouse.App.Services;
 using GapMouse.App.ViewModels;
-using GapMouse.App.Views;
+using GapMouse.Application.Engine;
+using GapMouse.Application.Logging;
 using GapMouse.Application.Settings;
+using GapMouse.Application.State;
+using GapMouse.Application.Updates;
+using GapMouse.Infrastructure.Shell;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace GapMouse.App;
 
 public sealed class App : Avalonia.Application
 {
+    private static IServiceProvider? s_services;
+    private static StartupOptions? s_options;
+
+    /// <summary>Hands the composed services to the app; Avalonia creates the instance through its parameterless constructor.</summary>
+    internal static void UseServices(IServiceProvider services, StartupOptions options)
+    {
+        s_services = services;
+        s_options = options;
+    }
+
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
         {
-            // Placeholder composition until the composition root arrives (Task 10).
-            var localizer = new Localizer();
-            var window = new MainWindow
-            {
-                DataContext = new MainWindowViewModel(
-                    localizer,
-                    new HomeViewModel(localizer, null!, null!, TimeProvider.System, null!, null!),
-                    new LogsViewModel(
-                        localizer,
-                        new GapMouse.Application.Logging.InMemoryActivityLog(),
-                        new Services.AvaloniaUiDispatcher(),
-                        new Services.AvaloniaClipboardService(() => null),
-                        new Services.ShellLauncher(),
-                        string.Empty),
-                    new SettingsViewModel(localizer, new PlaceholderSettingsService()),
-                    new AboutViewModel(
-                        localizer,
-                        new PlaceholderUpdateChecker(),
-                        new Services.ShellLauncher(),
-                        new Services.AvaloniaUiDispatcher(),
-                        new GapMouse.Application.Paths.AppPaths(string.Empty, string.Empty, IsPortable: true),
-                        "0.1.0")),
-            };
-            window.Closed += (_, _) => desktop.Shutdown();
-            desktop.MainWindow = window;
+            Compose();
         }
 
         base.OnFrameworkInitializationCompleted();
     }
-}
 
-internal sealed class PlaceholderUpdateChecker : GapMouse.Application.Updates.IUpdateChecker
-{
-    public event EventHandler<GapMouse.Application.Updates.UpdateCheckResult>? UpdateFound
+    private static void Compose()
     {
-        add { }
-        remove { }
-    }
+        var services = s_services ?? throw new InvalidOperationException("Services were not composed.");
+        var options = s_options ?? throw new InvalidOperationException("Options were not parsed.");
+        var host = services.GetRequiredService<EngineHost>();
+        services.GetRequiredService<ActivityLogWriter>();
+        var persister = services.GetRequiredService<AppStatePersister>();
+        persister.Start();
+        host.Start();
 
-    public Task<GapMouse.Application.Updates.UpdateCheckResult> CheckNowAsync(CancellationToken cancellationToken) =>
-        Task.FromResult(new GapMouse.Application.Updates.UpdateCheckResult(GapMouse.Application.Updates.UpdateCheckOutcome.Failed, null, null));
-}
+        var shell = services.GetRequiredService<ShellWindow>();
 
-// Placeholder until the composition root arrives (Task 10).
-internal sealed class PlaceholderSettingsService : ISettingsService
-{
-    public AppSettings Current { get; private set; } = AppSettings.Default;
+        var settings = services.GetRequiredService<ISettingsService>();
+        settings.Initialize();
+        services.GetRequiredService<ThemeApplier>().Start();
 
-    public bool IsHotkeyRegistered => true;
+        // Every view model exists up front so shutdown disposes each one exactly once.
+        _ = services.GetRequiredService<MainWindowViewModel>();
+        services.GetRequiredService<TrayCoordinator>().Start();
+        services.GetRequiredService<HomeViewModel>().Start();
+        services.GetRequiredService<UpdateService>().Start(() => settings.Current.CheckForUpdates);
 
-    public void Initialize()
-    {
-    }
+        var windows = services.GetRequiredService<IMainWindowService>();
+        var shellLogger = services.GetRequiredService<ILogger<ShellWindow>>();
+        shell.ActivationRequested += (_, _) => windows.Show();
+        shell.SessionEnding += (_, _) => services.GetRequiredService<IAppLifetime>().Exit();
+        shell.HandlerFailed += ex => AppLog.ShellHandlerFailed(shellLogger, ex);
 
-    public SettingsSaveResult Save(AppSettings settings)
-    {
-        Current = settings;
-        return new SettingsSaveResult(true, true, true);
-    }
-
-    public void MarkTrayHintShown()
-    {
-    }
-
-    public event EventHandler<AppSettings>? Changed
-    {
-        add { }
-        remove { }
+        if (!(options.Minimized || settings.Current.StartMinimized))
+        {
+            windows.Show();
+        }
     }
 }

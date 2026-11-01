@@ -25,6 +25,7 @@ public sealed partial class AboutViewModel : ViewModelBase, IDisposable
     private readonly IUiDispatcher _ui;
     private readonly AppPaths _paths;
     private readonly CancellationTokenSource _cts = new();
+    private bool _disposed;
     private Status _status = Status.None;
     private Version? _availableVersion;
 
@@ -70,6 +71,12 @@ public sealed partial class AboutViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
         _updates.UpdateFound -= OnUpdateFound;
         L.PropertyChanged -= OnLocalizerChanged;
         _cts.Cancel();
