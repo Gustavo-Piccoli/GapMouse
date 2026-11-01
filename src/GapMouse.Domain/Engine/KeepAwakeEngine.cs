@@ -58,6 +58,8 @@ public sealed class KeepAwakeEngine
 
     public bool IsStopped { get; private set; }
 
+    public bool IsSessionLocked { get; private set; }
+
     private PowerRequest Power =>
         Settings.KeepDisplayOn ? PowerRequest.KeepSystemAndDisplayAwake : PowerRequest.KeepSystemAwake;
 
@@ -68,12 +70,13 @@ public sealed class KeepAwakeEngine
             return new EngineStep(null, PowerRequest.None, Settings.CheckInterval);
         }
 
-        var now = input.Now;
-        var day = DateOnly.FromDateTime(now.Date);
-        if (day != _today.Day)
+        if (IsSessionLocked)
         {
-            _today = DailyStats.Empty(day);
+            return AdvanceLocked(input.Now);
         }
+
+        var now = input.Now;
+        RollDayIfNeeded(now);
 
         if (_lastAdvanceWasMoving && State == EngineState.Moving && _lastAdvanceAt is { } last)
         {
@@ -96,6 +99,63 @@ public sealed class KeepAwakeEngine
         return step;
     }
 
+    /// <summary>Advances while the session is locked: never moves the cursor and needs only the clock.</summary>
+    public EngineStep AdvanceLocked(DateTimeOffset now)
+    {
+        if (IsStopped)
+        {
+            return new EngineStep(null, PowerRequest.None, Settings.CheckInterval);
+        }
+
+        RollDayIfNeeded(now);
+        _lastAdvanceAt = now;
+        _lastAdvanceWasMoving = false;
+
+        if (State == EngineState.Paused && _pauseEndsAt is { } endsAt && endsAt <= now)
+        {
+            EnterWaitingFromPause(now, ResumeReason.PauseExpired);
+        }
+
+        if (State == EngineState.Paused)
+        {
+            var wait = _pauseEndsAt is { } ends ? Min(Settings.CheckInterval, ends - now) : Settings.CheckInterval;
+            return new EngineStep(null, PowerRequest.None, wait);
+        }
+
+        return new EngineStep(
+            null,
+            Settings.KeepAwakeWhileLocked ? PowerRequest.KeepSystemAwake : PowerRequest.None,
+            Settings.CheckInterval);
+    }
+
+    public void SetSessionLocked(bool locked, DateTimeOffset now)
+    {
+        if (locked == IsSessionLocked)
+        {
+            return;
+        }
+
+        IsSessionLocked = locked;
+        _lastAdvanceWasMoving = false;
+        if (locked)
+        {
+            if (State == EngineState.Moving)
+            {
+                State = EngineState.Waiting;
+                _path = null;
+            }
+
+            _events.Add(new SessionLocked(now, Settings.KeepAwakeWhileLocked));
+            return;
+        }
+
+        _events.Add(new SessionUnlocked(now));
+        if (State == EngineState.Waiting)
+        {
+            _events.Add(new WaitingStarted(now, Settings.IdleThreshold));
+        }
+    }
+
     public IReadOnlyList<EngineEvent> DrainEvents()
     {
         var drained = _events.ToArray();
@@ -113,7 +173,8 @@ public sealed class KeepAwakeEngine
         _lastPausedAt,
         _lastResumedAt,
         _pauseEndsAt,
-        _today);
+        _today,
+        IsSessionLocked);
 
     public void Pause(PauseDuration duration, DateTimeOffset now)
     {
@@ -155,6 +216,15 @@ public sealed class KeepAwakeEngine
     }
 
     private static TimeSpan Min(TimeSpan a, TimeSpan b) => a < b ? a : b;
+
+    private void RollDayIfNeeded(DateTimeOffset now)
+    {
+        var day = DateOnly.FromDateTime(now.Date);
+        if (day != _today.Day)
+        {
+            _today = DailyStats.Empty(day);
+        }
+    }
 
     private void EnterWaitingFromPause(DateTimeOffset now, ResumeReason reason)
     {

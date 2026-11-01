@@ -17,7 +17,8 @@ public sealed class FakeEngineController : IEngineController
         null,
         null,
         null,
-        DailyStats.Empty(new DateOnly(2026, 1, 1)));
+        DailyStats.Empty(new DateOnly(2026, 1, 1)),
+        false);
 
     public List<PauseDuration> PauseCalls { get; } = [];
 
