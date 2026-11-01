@@ -161,4 +161,75 @@ public class KeepAwakeEngineLockTests
         e.SetSessionLocked(false, T0 + 1.S());
         e.GetSnapshot().IsSessionLocked.ShouldBeFalse();
     }
+
+    [Fact]
+    public void Unlock_RestartsTheIdleCount_EvenWhenSystemIdleIsHigh()
+    {
+        var e = NewEngine();
+        e.SetSessionLocked(true, T0 + 10.S());
+        e.SetSessionLocked(false, T0 + 400.S());
+        e.DrainEvents();
+
+        var early = e.Advance(Input(at: 401.S(), idle: 400.S()));
+
+        early.MoveCursorTo.ShouldBeNull();
+        e.State.ShouldBe(EngineState.Waiting);
+        e.Advance(Input(at: 519.S(), idle: 519.S())).MoveCursorTo.ShouldBeNull();
+        e.State.ShouldBe(EngineState.Waiting);
+
+        var late = e.Advance(Input(at: 520.S(), idle: 520.S()));
+
+        late.MoveCursorTo.ShouldNotBeNull();
+        e.State.ShouldBe(EngineState.Moving);
+    }
+
+    [Fact]
+    public void Unlock_RealInputAfterUnlock_ClearsTheFloor()
+    {
+        var e = NewEngine();
+        e.SetSessionLocked(true, T0 + 10.S());
+        e.SetSessionLocked(false, T0 + 400.S());
+
+        // Real input at 410 s: idle (1 s at 411 s) is below the time since unlock (11 s).
+        e.Advance(Input(at: 411.S(), idle: 1.S()));
+
+        // The idle counter alone now decides: after 120 s of no input it moves.
+        e.Advance(Input(at: 530.S(), idle: 119.S())).MoveCursorTo.ShouldBeNull();
+        e.Advance(Input(at: 531.S(), idle: 120.S())).MoveCursorTo.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void LockWhileMoving_AccruesMovingTimeUpToTheLock()
+    {
+        var e = StartedMoving();
+        e.Advance(Input(at: 121.S(), idle: 121.S()));
+        var before = e.GetSnapshot().Today.MovingTime;
+
+        e.SetSessionLocked(true, T0 + 126.S());
+
+        e.GetSnapshot().Today.MovingTime.ShouldBe(before + 5.S());
+    }
+
+    [Fact]
+    public void LockWhileMoving_CapsTheAccruedGap()
+    {
+        var e = StartedMoving();
+        e.Advance(Input(at: 121.S(), idle: 121.S()));
+        var before = e.GetSnapshot().Today.MovingTime;
+
+        e.SetSessionLocked(true, T0 + 1000.S());
+
+        e.GetSnapshot().Today.MovingTime.ShouldBe(before + 60.S());
+    }
+
+    [Fact]
+    public void Lock_WhenUnpausedWithKeepAwake_ReportsKeepAwakeTrue()
+    {
+        var e = NewEngine(LockedAwakeSettings());
+        e.DrainEvents();
+
+        e.SetSessionLocked(true, T0 + 1.S());
+
+        e.DrainEvents().ShouldBe([new SessionLocked(T0 + 1.S(), true)]);
+    }
 }

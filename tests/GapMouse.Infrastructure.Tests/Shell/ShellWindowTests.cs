@@ -111,9 +111,18 @@ public sealed class ShellWindowTests
         Exception? failure = null;
         var window = new ShellWindow();
         window.HandlerFailed += e => failure = e;
+        var handle = window.Handle;
+
+        window.SessionNotificationFailure.ShouldBeNull();
+        var values = new List<bool>();
+        window.SessionLockChanged += (_, locked) => values.Add(locked);
+        ShellTestNative.SendMessageW(handle, ShellTestNative.WM_WTSSESSION_CHANGE, 0x7, 1);
+        values.ShouldBe([true]);
 
         window.Dispose();
+        window.Dispose();
 
+        window.Handle.ShouldBe(0);
         failure.ShouldBeNull();
     }
 

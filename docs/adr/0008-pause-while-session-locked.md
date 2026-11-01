@@ -35,7 +35,7 @@ example).
 
 ## Consequences
 
-- No cursor WARN lines are expected while locked.
+- No cursor WARN lines are expected while locked once the lock has been processed (one failure/recovery pair can still appear at the lock edge).
 - A timed pause can expire while locked, without moving the mouse until unlock.
 - With the option on, only the system stays awake; the display can turn off.
 - The DevConsole does not detect locking (it has no message window).

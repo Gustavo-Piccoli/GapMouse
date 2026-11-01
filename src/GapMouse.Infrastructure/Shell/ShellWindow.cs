@@ -16,7 +16,6 @@ public sealed unsafe class ShellWindow : IDisposable
 
     private GCHandle _self;
     private bool _sessionNotificationsRegistered;
-    private Exception? _registrationFailure;
 
     public ShellWindow()
     {
@@ -37,12 +36,18 @@ public sealed unsafe class ShellWindow : IDisposable
         }
         else
         {
-            _registrationFailure = new InvalidOperationException(
+            SessionNotificationFailure = new InvalidOperationException(
                 $"Could not register for session notifications (error {Marshal.GetLastPInvokeError()}).");
         }
     }
 
     public nint Handle { get; private set; }
+
+    /// <summary>
+    /// Set when registering for session (lock) notifications failed; the window works without them,
+    /// and the app then behaves as before the lock pause. Not retried.
+    /// </summary>
+    public Exception? SessionNotificationFailure { get; }
 
     /// <summary>Raised when a second launch asks this instance to show its window.</summary>
     public event EventHandler? ActivationRequested;
@@ -205,12 +210,6 @@ public sealed unsafe class ShellWindow : IDisposable
     {
         MessageReceived?.Invoke(msg, wParam, lParam);
         result = 0;
-        if (_registrationFailure is { } failure)
-        {
-            _registrationFailure = null;
-            ReportFailure(failure);
-        }
-
         if (msg == WM_WTSSESSION_CHANGE)
         {
             if (wParam == WTS_SESSION_LOCK)

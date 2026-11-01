@@ -81,8 +81,13 @@ public sealed class EngineHostLockTests : IDisposable
 
         host.SetSessionLocked(false);
 
-        SpinWait.SpinUntil(() => _cursor.GetCount > 0 && _cursor.SetCount > 0, Timeout).ShouldBeTrue();
-        host.Snapshot.IsSessionLocked.ShouldBeFalse();
+        SpinWait.SpinUntil(() => _cursor.GetCount > 0 && !host.Snapshot.IsSessionLocked, Timeout).ShouldBeTrue();
+        // The idle count restarts at unlock: a high system idle alone must not move the cursor yet.
+        _cursor.SetCount.ShouldBe(0);
+
+        _time.Advance(EngineSettings.Default.IdleThreshold + TimeSpan.FromSeconds(1));
+
+        SpinWait.SpinUntil(() => _cursor.SetCount > 0, Timeout).ShouldBeTrue();
     }
 
     [Fact]

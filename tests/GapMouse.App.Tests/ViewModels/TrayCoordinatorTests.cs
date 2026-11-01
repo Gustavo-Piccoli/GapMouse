@@ -97,6 +97,17 @@ public sealed class TrayCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void SessionLocked_WhilePaused_KeepsThePausedTrayState()
+    {
+        using var c = Create();
+        Paused();
+
+        _engine.Raise(new SessionLocked(Now, false));
+
+        _tray.States[^1].ShouldBe((TrayIconState.Paused, "GapMouse — Paused"));
+    }
+
+    [Fact]
     public void NotificationsOff_NoBalloonOnStateChange()
     {
         using var c = Create();

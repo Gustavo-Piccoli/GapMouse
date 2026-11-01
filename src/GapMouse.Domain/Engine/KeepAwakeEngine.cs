@@ -31,6 +31,7 @@ public sealed class KeepAwakeEngine
     private TimeSpan _lastIdle;
     private DateTimeOffset? _lastMovingStartedAt;
     private DateTimeOffset? _lastUserReturnedAt;
+    private DateTimeOffset? _unlockedAt;
     private DailyStats _today;
 
     public KeepAwakeEngine(EngineSettings settings, IRandomSource random, DateTimeOffset startedAt, DailyStats? restoredStats = null)
@@ -87,6 +88,7 @@ public sealed class KeepAwakeEngine
             }
         }
 
+        input = ApplyUnlockFloor(input);
         _lastIdle = input.Idle;
         var step = State switch
         {
@@ -135,10 +137,20 @@ public sealed class KeepAwakeEngine
             return;
         }
 
+        if (locked && _lastAdvanceWasMoving && State == EngineState.Moving && _lastAdvanceAt is { } last)
+        {
+            var delta = now - last;
+            if (delta > TimeSpan.Zero)
+            {
+                _today = _today with { MovingTime = _today.MovingTime + Min(delta, MaxStatsGap) };
+            }
+        }
+
         IsSessionLocked = locked;
         _lastAdvanceWasMoving = false;
         if (locked)
         {
+            _unlockedAt = null;
             if (State == EngineState.Moving)
             {
                 State = EngineState.Waiting;
@@ -149,6 +161,8 @@ public sealed class KeepAwakeEngine
             return;
         }
 
+        // The system idle counter may not reset on unlock (Windows Hello, RDP reconnect): count from here.
+        _unlockedAt = now;
         _events.Add(new SessionUnlocked(now));
         if (State == EngineState.Waiting)
         {
@@ -216,6 +230,27 @@ public sealed class KeepAwakeEngine
     }
 
     private static TimeSpan Min(TimeSpan a, TimeSpan b) => a < b ? a : b;
+
+    /// <summary>
+    /// After an unlock, caps the idle time at the time since the unlock until real input shows up
+    /// (the system idle drops below the time since the unlock) or movement starts.
+    /// </summary>
+    private EngineInput ApplyUnlockFloor(EngineInput input)
+    {
+        if (_unlockedAt is not { } unlockedAt)
+        {
+            return input;
+        }
+
+        var sinceUnlock = input.Now - unlockedAt;
+        if (State == EngineState.Moving || input.Idle < sinceUnlock)
+        {
+            _unlockedAt = null;
+            return input;
+        }
+
+        return input with { Idle = sinceUnlock };
+    }
 
     private void RollDayIfNeeded(DateTimeOffset now)
     {

@@ -35,6 +35,17 @@ public sealed class AppStatePersisterTests
     }
 
     [Fact]
+    public void SessionLocked_SavesCurrentStats()
+    {
+        var f = new Fixture();
+        f.Persister.Start();
+
+        f.Engine.Raise(new SessionLocked(Now, false));
+
+        Assert.Single(f.Store.Saved);
+    }
+
+    [Fact]
     public void WhileMoving_SavesEverySixtySeconds()
     {
         var f = new Fixture();
