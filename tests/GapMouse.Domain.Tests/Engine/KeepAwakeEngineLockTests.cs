@@ -127,9 +127,25 @@ public class KeepAwakeEngineLockTests
         var before = e.GetSnapshot().Today.MovingTime;
 
         e.AdvanceLocked(T0 + 130.S());
-        e.AdvanceLocked(T0 + 140.S());
+        e.AdvanceLocked(T0 + 500.S());
+        e.GetSnapshot().Today.MovingTime.ShouldBe(before);
+
+        e.SetSessionLocked(false, T0 + 600.S());
+        e.Advance(Input(at: 1000.S(), idle: 5.S()));
 
         e.GetSnapshot().Today.MovingTime.ShouldBe(before);
+    }
+
+    [Fact]
+    public void LockWhilePaused_WithKeepAwake_ReportsKeepAwakeFalse()
+    {
+        var e = NewEngine(LockedAwakeSettings());
+        e.Pause(PauseDuration.Indefinite, T0);
+        e.DrainEvents();
+
+        e.SetSessionLocked(true, T0 + 1.S());
+
+        e.DrainEvents().ShouldBe([new SessionLocked(T0 + 1.S(), false)]);
     }
 
     [Fact]

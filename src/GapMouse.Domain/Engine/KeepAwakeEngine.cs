@@ -145,7 +145,7 @@ public sealed class KeepAwakeEngine
                 _path = null;
             }
 
-            _events.Add(new SessionLocked(now, Settings.KeepAwakeWhileLocked));
+            _events.Add(new SessionLocked(now, Settings.KeepAwakeWhileLocked && State != EngineState.Paused));
             return;
         }
 
