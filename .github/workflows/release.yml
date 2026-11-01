@@ -218,3 +218,38 @@ jobs:
           else
             gh release create "$TAG" dist/* --title "GapMouse $VERSION" --generate-notes --verify-tag
           fi
+
+  winget:
+    # Stable releases only; pre-releases are never submitted to winget.
+    if: needs.version.outputs.dry_run == 'false' && !contains(needs.version.outputs.version, '-')
+    needs: [version, publish]
+    runs-on: windows-latest
+    env:
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+    steps:
+      # Secrets cannot be used in step conditions, so gate on a step output instead.
+      - id: gate
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrEmpty($env:WINGET_TOKEN)) {
+            Write-Host '::notice::WINGET_TOKEN not set; skipping winget update'
+            'enabled=false' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            'enabled=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+      - name: Download wingetcreate
+        if: steps.gate.outputs.enabled == 'true'
+        shell: pwsh
+        run: Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+      - name: Submit manifest update
+        if: steps.gate.outputs.enabled == 'true'
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          $base = "https://github.com/Gustavo-Piccoli/GapMouse/releases/download/$env:TAG"
+          $x64 = "$base/GapMouse-Setup-$env:VERSION-x64.exe|x64"
+          $arm64 = "$base/GapMouse-Setup-$env:VERSION-arm64.exe|arm64"
+          ./wingetcreate.exe update GustavoPiccoli.GapMouse --version $env:VERSION --urls $x64 $arm64 --submit --token $env:WINGET_TOKEN
+          if ($LASTEXITCODE -ne 0) { throw "wingetcreate failed with exit code $LASTEXITCODE" }
