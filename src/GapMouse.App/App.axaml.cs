@@ -1,5 +1,6 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using GapMouse.App.Composition;
 using GapMouse.App.Services;
 using GapMouse.App.ViewModels;
@@ -43,15 +44,23 @@ public sealed class App : Avalonia.Application
         var services = s_services ?? throw new InvalidOperationException("Services were not composed.");
         var options = s_options ?? throw new InvalidOperationException("Options were not parsed.");
         var host = services.GetRequiredService<EngineHost>();
+        var uiLogger = services.GetRequiredService<ILogger<App>>();
+        Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            AppLog.UnhandledUiException(uiLogger, e.Exception);
+            e.Handled = true;
+        };
+
+        var shell = services.GetRequiredService<ShellWindow>();
+
+        // Settings first: the log file, startup entry and hotkey must be configured before the engine produces events.
+        var settings = services.GetRequiredService<ISettingsService>();
+        settings.Initialize();
+
         services.GetRequiredService<ActivityLogWriter>();
         var persister = services.GetRequiredService<AppStatePersister>();
         persister.Start();
         host.Start();
-
-        var shell = services.GetRequiredService<ShellWindow>();
-
-        var settings = services.GetRequiredService<ISettingsService>();
-        settings.Initialize();
         services.GetRequiredService<ThemeApplier>().Start();
 
         // Every view model exists up front so shutdown disposes each one exactly once.
