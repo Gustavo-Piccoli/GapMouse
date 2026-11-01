@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using GapMouse.App.Localization;
 using GapMouse.App.ViewModels;
 using GapMouse.App.Views;
+using GapMouse.Application.Settings;
 
 namespace GapMouse.App;
 
@@ -23,7 +24,7 @@ public sealed class App : Avalonia.Application
                     localizer,
                     new HomeViewModel(localizer, null!, null!, TimeProvider.System, null!, null!),
                     new LogsViewModel(localizer),
-                    new SettingsViewModel(localizer),
+                    new SettingsViewModel(localizer, new PlaceholderSettingsService()),
                     new AboutViewModel(
                         localizer,
                         new PlaceholderUpdateChecker(),
@@ -50,4 +51,32 @@ internal sealed class PlaceholderUpdateChecker : GapMouse.Application.Updates.IU
 
     public Task<GapMouse.Application.Updates.UpdateCheckResult> CheckNowAsync(CancellationToken cancellationToken) =>
         Task.FromResult(new GapMouse.Application.Updates.UpdateCheckResult(GapMouse.Application.Updates.UpdateCheckOutcome.Failed, null, null));
+}
+
+// Placeholder until the composition root arrives (Task 10).
+internal sealed class PlaceholderSettingsService : ISettingsService
+{
+    public AppSettings Current { get; private set; } = AppSettings.Default;
+
+    public bool IsHotkeyRegistered => true;
+
+    public void Initialize()
+    {
+    }
+
+    public SettingsSaveResult Save(AppSettings settings)
+    {
+        Current = settings;
+        return new SettingsSaveResult(true, true, true);
+    }
+
+    public void MarkTrayHintShown()
+    {
+    }
+
+    public event EventHandler<AppSettings>? Changed
+    {
+        add { }
+        remove { }
+    }
 }
