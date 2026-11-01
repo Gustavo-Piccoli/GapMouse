@@ -57,6 +57,8 @@ english.AdditionalOptions=Additional options:
 brazilianportuguese.AdditionalOptions=Opções adicionais:
 
 [Tasks]
+; CreateDesktopIcon and AdditionalIcons are built-in messages of both language files.
+Name: desktopicon; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: startup; Description: "{cm:StartWithWindows}"; GroupDescription: "{cm:AdditionalOptions}"; Flags: unchecked
 
 [Files]
@@ -66,6 +68,7 @@ Source: "{#SourceDir}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\GapMouse"; Filename: "{app}\GapMouse.exe"
+Name: "{autodesktop}\GapMouse"; Filename: "{app}\GapMouse.exe"; Tasks: desktopicon
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "GapMouse"; ValueData: """{app}\GapMouse.exe"" --minimized"; Tasks: startup
