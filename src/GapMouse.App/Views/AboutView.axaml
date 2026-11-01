@@ -1,0 +1,7 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GapMouse.App.ViewModels"
+             x:Class="GapMouse.App.Views.AboutView"
+             x:DataType="vm:AboutViewModel">
+  <TextBlock Text="About" Margin="16" />
+</UserControl>

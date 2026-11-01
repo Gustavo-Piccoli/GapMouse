@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 
-namespace GapMouse.Application.Tests.Fakes;
+namespace GapMouse.Testing.Logging;
 
-internal sealed class ListLogger<T> : ILogger<T>
+public sealed class ListLogger<T> : ILogger<T>
 {
     private readonly object _gate = new();
     private readonly List<LogLevel> _levels = [];

@@ -1,0 +1,7 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GapMouse.App.ViewModels"
+             x:Class="GapMouse.App.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+  <TextBlock Text="Home" Margin="16" />
+</UserControl>

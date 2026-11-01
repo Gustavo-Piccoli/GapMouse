@@ -46,3 +46,9 @@ jobs:
           name: devconsole-win-x64
           path: artifacts/devconsole
           retention-days: 7
+      - run: dotnet publish src/GapMouse.App -c Release -r win-x64 -o artifacts/app
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gapmouse-win-x64
+          path: artifacts/app
+          retention-days: 7
