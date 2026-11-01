@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.0](https://github.com/Gustavo-Piccoli/GapMouse/compare/v1.0.0...v1.1.0) (2026-11-01)
+
+
+### Features
+
+* **app:** add design tokens, themed Fluent palette and base styles ([ebeeeca](https://github.com/Gustavo-Piccoli/GapMouse/commit/ebeeeca2374cce255be1246d5f6e63de1fd5bdb3))
+* **app:** redesign Home as the door-hanger state face ([011f410](https://github.com/Gustavo-Piccoli/GapMouse/commit/011f410d257ffea167f6405943ef491fe8f42e0e))
+* **app:** redesign Settings as grouped setting cards ([544dbfa](https://github.com/Gustavo-Piccoli/GapMouse/commit/544dbfa7d94af3b3e089be85b6aa937e2e11290c))
+* **app:** replace top tabs with a navigation rail ([cc53a63](https://github.com/Gustavo-Piccoli/GapMouse/commit/cc53a637a1a0f6cef6cedcb5d6e58ca63733393c))
+* **app:** restyle Logs, About and the custom pause dialog ([12e896f](https://github.com/Gustavo-Piccoli/GapMouse/commit/12e896f70e65446e59a09be8db653f08c21d2376))
+
+
+### Bug Fixes
+
+* **app:** apply finish review contrast, rail and layout fixes ([35f60d7](https://github.com/Gustavo-Piccoli/GapMouse/commit/35f60d7b7bd8826ff9e6e758052cba3d86bcbd68))
+* **app:** final review polish ([192c8a7](https://github.com/Gustavo-Piccoli/GapMouse/commit/192c8a7d28246647a44086ad658c1f00e320c197))
+* **app:** finish review round 2 polish ([1f2e2f0](https://github.com/Gustavo-Piccoli/GapMouse/commit/1f2e2f08caf4ab0bfd1dcb4168034a97c07afc6c))
+* **app:** make Pause an accent button and share state face styles ([97f47f4](https://github.com/Gustavo-Piccoli/GapMouse/commit/97f47f48b471a75042fc72ebfe0de7ad034d8a47))
+* **app:** tighten log rows and verify the empty state ([72cbf62](https://github.com/Gustavo-Piccoli/GapMouse/commit/72cbf627e806fad01e149d5f37f0f4e7046807aa))
+* **app:** wrap the settings status message ([245ce64](https://github.com/Gustavo-Piccoli/GapMouse/commit/245ce64761073efe2f4f1684a9af9ae6fb74fd38))
+
 ## [1.0.0](https://github.com/Gustavo-Piccoli/GapMouse/compare/v0.1.0...v1.0.0) (2026-11-01)
 
 
