@@ -62,6 +62,31 @@ public sealed class TrayCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public void SessionLocked_WhileMoving_SwitchesToWaitingWithoutBalloon()
+    {
+        _settings.Current = new AppSettings { NotificationsEnabled = true };
+        using var c = Create();
+        Moving();
+        _tray.Balloons.Clear();
+
+        _engine.Raise(new SessionLocked(Now, false));
+
+        _tray.States[^1].ShouldBe((TrayIconState.Waiting, "GapMouse — Waiting"));
+        _tray.Balloons.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void SessionUnlocked_ShowsNoBalloon()
+    {
+        _settings.Current = new AppSettings { NotificationsEnabled = true };
+        using var c = Create();
+
+        _engine.Raise(new SessionUnlocked(Now));
+
+        _tray.Balloons.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Paused_SwitchesToPausedIcon()
     {
         using var c = Create();

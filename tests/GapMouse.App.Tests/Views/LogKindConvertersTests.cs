@@ -20,6 +20,8 @@ public sealed class LogKindConvertersTests
     [InlineData(LogKind.Return, "#5B6474", "#FFFFFF")]
     [InlineData(LogKind.Paused, "#E3A21A", "#1F1503")]
     [InlineData(LogKind.Resumed, "#E3A21A", "#1F1503")]
+    [InlineData(LogKind.Locked, "#E3A21A", "#1F1503")]
+    [InlineData(LogKind.Unlocked, "#E3A21A", "#1F1503")]
     [InlineData(LogKind.Config, "#6B5BD6", "#FFFFFF")]
     [InlineData(LogKind.Stop, "#B42318", "#FFFFFF")]
     [InlineData(LogKind.Error, "#B42318", "#FFFFFF")]

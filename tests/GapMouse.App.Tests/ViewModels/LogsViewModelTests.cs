@@ -78,7 +78,7 @@ public sealed class LogsViewModelTests
             ignoreOrder: true);
 
         vm.Filter = LogFilter.Pauses;
-        vm.Lines.Select(x => x.Kind).ShouldBe([LogKind.Paused, LogKind.Resumed]);
+        vm.Lines.Select(x => x.Kind).ShouldBe([LogKind.Paused, LogKind.Resumed, LogKind.Locked, LogKind.Unlocked]);
     }
 
     [Fact]

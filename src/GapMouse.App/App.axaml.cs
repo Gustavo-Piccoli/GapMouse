@@ -72,8 +72,14 @@ public sealed class App : Avalonia.Application
         var windows = services.GetRequiredService<IMainWindowService>();
         var shellLogger = services.GetRequiredService<ILogger<ShellWindow>>();
         shell.ActivationRequested += (_, _) => windows.Show();
+        shell.SessionLockChanged += (_, locked) => host.SetSessionLocked(locked);
         shell.SessionEnding += (_, _) => services.GetRequiredService<IAppLifetime>().Exit();
         shell.HandlerFailed += ex => AppLog.ShellHandlerFailed(shellLogger, ex);
+
+        if (ShellWindow.QueryIsSessionLocked())
+        {
+            host.SetSessionLocked(true);
+        }
 
         if (!(options.Minimized || settings.Current.StartMinimized))
         {

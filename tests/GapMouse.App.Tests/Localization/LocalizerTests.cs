@@ -144,4 +144,34 @@ public sealed class LocalizerTests
         localizer.SetLanguage(UiLanguage.Portuguese);
         localizer.AboutUpdatesLabel.ShouldBe("Atualizações");
     }
+
+    [Fact]
+    public void SettingsKeepAwakeWhileLocked_IsLocalized()
+    {
+        var localizer = Create();
+
+        localizer.SetLanguage(UiLanguage.English);
+        localizer.SettingsKeepAwakeWhileLocked.ShouldBe("Keep the PC awake while the screen is locked");
+        localizer.SettingsKeepAwakeWhileLockedCaption.ShouldBe("The mouse stays still while locked; the screen can turn off.");
+
+        localizer.SetLanguage(UiLanguage.Portuguese);
+        localizer.SettingsKeepAwakeWhileLocked.ShouldBe("Manter o PC acordado com a tela bloqueada");
+        localizer.SettingsKeepAwakeWhileLockedCaption.ShouldBe("O mouse fica parado com a tela bloqueada; a tela pode desligar.");
+    }
+
+    [Fact]
+    public void LogSessionLocked_IsLocalized()
+    {
+        var localizer = Create();
+
+        localizer.SetLanguage(UiLanguage.English);
+        localizer.LogSessionLocked(false).ShouldBe("Screen locked; movement stopped, power released");
+        localizer.LogSessionLocked(true).ShouldBe("Screen locked; movement stopped, system kept awake");
+        localizer.LogSessionUnlocked.ShouldBe("Screen unlocked");
+
+        localizer.SetLanguage(UiLanguage.Portuguese);
+        localizer.LogSessionLocked(false).ShouldBe("Tela bloqueada; movimento parado, energia liberada");
+        localizer.LogSessionLocked(true).ShouldBe("Tela bloqueada; movimento parado, sistema mantido acordado");
+        localizer.LogSessionUnlocked.ShouldBe("Tela desbloqueada");
+    }
 }

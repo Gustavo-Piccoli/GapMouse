@@ -132,6 +132,14 @@ public sealed class TrayCoordinator(
                 _state = EngineState.Waiting;
                 phrase = l.TrayResumed;
                 break;
+            case SessionLocked:
+                // The engine stops moving on lock; only an in-flight Moving state changes (Paused stays Paused).
+                if (_state == EngineState.Moving)
+                {
+                    _state = EngineState.Waiting;
+                }
+
+                break;
             case WaitingStarted:
                 _state = EngineState.Waiting;
                 break;
