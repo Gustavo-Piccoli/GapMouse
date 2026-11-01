@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Gustavo-Piccoli/GapMouse/compare/v1.1.0...v1.2.0) (2026-11-01)
+
+
+### Features
+
+* pause while the screen is locked ([#10](https://github.com/Gustavo-Piccoli/GapMouse/issues/10)) ([6b3cb33](https://github.com/Gustavo-Piccoli/GapMouse/commit/6b3cb339fa11ca5e48f9410f8cd7957288482a38))
+
 ## [1.1.0](https://github.com/Gustavo-Piccoli/GapMouse/compare/v1.0.0...v1.1.0) (2026-11-01)
 
 
