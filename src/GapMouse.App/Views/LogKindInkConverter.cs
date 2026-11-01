@@ -13,7 +13,7 @@ public sealed class LogKindInkConverter : IValueConverter
     private static readonly IBrush DarkAmber = new ImmutableSolidColorBrush(Color.Parse("#1F1503"));
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        value is LogKind.Paused or LogKind.Resumed ? DarkAmber : White;
+        value is LogKind.Paused or LogKind.Resumed or LogKind.Locked or LogKind.Unlocked ? DarkAmber : White;
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();

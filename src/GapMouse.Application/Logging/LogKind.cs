@@ -13,4 +13,6 @@ public enum LogKind
     Stop,
     Warn,
     Error,
+    Locked,
+    Unlocked,
 }

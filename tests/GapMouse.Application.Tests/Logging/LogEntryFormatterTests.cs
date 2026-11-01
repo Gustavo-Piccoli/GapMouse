@@ -99,6 +99,28 @@ public sealed class LogEntryFormatterTests
         Assert.Equal("Settings changed", entry.Message);
     }
 
+    [Theory]
+    [InlineData(false, "Screen locked; movement stopped, power released")]
+    [InlineData(true, "Screen locked; movement stopped, system kept awake")]
+    public void FromEvent_SessionLocked_FormatsLocked(bool keepAwake, string message)
+    {
+        var entry = LogEntryFormatter.FromEvent(new SessionLocked(At, keepAwake));
+
+        Assert.Equal(LogKind.Locked, entry.Kind);
+        Assert.Equal("LOCKED", entry.Tag);
+        Assert.Equal(message, entry.Message);
+    }
+
+    [Fact]
+    public void FromEvent_SessionUnlocked_FormatsUnlocked()
+    {
+        var entry = LogEntryFormatter.FromEvent(new SessionUnlocked(At));
+
+        Assert.Equal(LogKind.Unlocked, entry.Kind);
+        Assert.Equal("UNLOCKED", entry.Tag);
+        Assert.Equal("Screen unlocked", entry.Message);
+    }
+
     [Fact]
     public void FromEvent_EngineStopped_FormatsStop()
     {

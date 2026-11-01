@@ -15,7 +15,7 @@ internal static class ConsoleEventPrinter
             LogKind.Waiting => ConsoleColor.Cyan,
             LogKind.Moving => ConsoleColor.Green,
             LogKind.Return => ConsoleColor.Gray,
-            LogKind.Paused or LogKind.Resumed => ConsoleColor.Magenta,
+            LogKind.Paused or LogKind.Resumed or LogKind.Locked or LogKind.Unlocked => ConsoleColor.Magenta,
             LogKind.Config => ConsoleColor.DarkGray,
             LogKind.Stop => ConsoleColor.Red,
             LogKind.Warn => ConsoleColor.Yellow,

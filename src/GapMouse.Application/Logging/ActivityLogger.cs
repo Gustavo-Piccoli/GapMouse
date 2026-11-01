@@ -29,7 +29,7 @@ public sealed class ActivityLogger<T>(IActivityLog log, TimeProvider time, ILogg
         }
 
         var message = formatter(state, exception);
-        if (exception is not null)
+        if (exception is not null && !message.Contains(exception.Message, StringComparison.Ordinal))
         {
             message += ": " + exception.Message;
         }

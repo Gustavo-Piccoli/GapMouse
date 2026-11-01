@@ -9,7 +9,8 @@ public sealed record EngineSettings
         TimeSpan movementIntervalMin,
         TimeSpan movementIntervalMax,
         int amplitudePixels,
-        bool keepDisplayOn)
+        bool keepDisplayOn,
+        bool keepAwakeWhileLocked)
     {
         IdleThreshold = idleThreshold;
         CheckInterval = checkInterval;
@@ -17,6 +18,7 @@ public sealed record EngineSettings
         MovementIntervalMax = movementIntervalMax;
         AmplitudePixels = amplitudePixels;
         KeepDisplayOn = keepDisplayOn;
+        KeepAwakeWhileLocked = keepAwakeWhileLocked;
     }
 
     public static EngineSettings Default { get; } = new(
@@ -25,7 +27,8 @@ public sealed record EngineSettings
         TimeSpan.FromSeconds(10),
         TimeSpan.FromSeconds(25),
         120,
-        true);
+        true,
+        false);
 
     public TimeSpan IdleThreshold { get; }
 
@@ -39,6 +42,8 @@ public sealed record EngineSettings
 
     public bool KeepDisplayOn { get; }
 
+    public bool KeepAwakeWhileLocked { get; }
+
     /// <summary>Validates the values and reports every error found, not just the first.</summary>
     public static ValidationResult<EngineSettings> Create(
         int idleThresholdSeconds,
@@ -46,7 +51,8 @@ public sealed record EngineSettings
         int movementIntervalMinSeconds,
         int movementIntervalMaxSeconds,
         int amplitudePixels,
-        bool keepDisplayOn)
+        bool keepDisplayOn,
+        bool keepAwakeWhileLocked = false)
     {
         List<SettingsError> errors = [];
         CheckRange(errors, SettingsField.IdleThreshold, idleThresholdSeconds, 10, 3600);
@@ -71,7 +77,8 @@ public sealed record EngineSettings
             TimeSpan.FromSeconds(movementIntervalMinSeconds),
             TimeSpan.FromSeconds(movementIntervalMaxSeconds),
             amplitudePixels,
-            keepDisplayOn));
+            keepDisplayOn,
+            keepAwakeWhileLocked));
     }
 
     private static void CheckRange(List<SettingsError> errors, SettingsField field, int value, int min, int max)

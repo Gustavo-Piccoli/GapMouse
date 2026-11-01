@@ -66,7 +66,7 @@ public sealed partial class AppStatePersister : IDisposable
 
     private void OnEngineEvent(object? sender, EngineEventArgs e)
     {
-        if (e.Event is UserReturned or EnginePaused or EngineStopped)
+        if (e.Event is UserReturned or EnginePaused or EngineStopped or SessionLocked)
         {
             Save();
         }

@@ -266,6 +266,49 @@ public sealed class SettingsViewModelTests
         [vm.IdleError, vm.CheckError, vm.MinError, vm.MaxError, vm.AmplitudeError, vm.RetentionError];
 
     [Fact]
+    public void KeepAwakeWhileLocked_DefaultsOffAndToggleMarksDirty()
+    {
+        var (vm, _) = Create();
+
+        vm.KeepAwakeWhileLocked.ShouldBeFalse();
+        vm.IsDirty.ShouldBeFalse();
+
+        vm.KeepAwakeWhileLocked = true;
+
+        vm.IsDirty.ShouldBeTrue();
+        vm.SaveCommand.CanExecute(null).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void KeepAwakeWhileLocked_SavedIntoEngineSettings()
+    {
+        var (vm, service) = Create();
+        vm.KeepAwakeWhileLocked = true;
+
+        vm.SaveCommand.Execute(null);
+
+        service.Saved.ShouldHaveSingleItem().Engine.KeepAwakeWhileLocked.ShouldBeTrue();
+        vm.IsDirty.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void KeepAwakeWhileLocked_LoadedFromStoredSettings()
+    {
+        var service = new FakeSettingsService
+        {
+            Current = AppSettings.Default with
+            {
+                Engine = EngineSettings.Create(120, 1, 10, 25, 120, true, true).Value,
+            },
+        };
+
+        var vm = new SettingsViewModel(English(), service);
+
+        vm.KeepAwakeWhileLocked.ShouldBeTrue();
+        vm.IsDirty.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Save_ValidForm_CallsServiceWithParsedSettings()
     {
         var (vm, service) = Create();

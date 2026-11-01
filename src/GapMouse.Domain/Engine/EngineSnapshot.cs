@@ -11,4 +11,5 @@ public sealed record EngineSnapshot(
     DateTimeOffset? LastPausedAt,
     DateTimeOffset? LastResumedAt,
     DateTimeOffset? PauseEndsAt,
-    DailyStats Today);
+    DailyStats Today,
+    bool IsSessionLocked);

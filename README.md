@@ -72,6 +72,7 @@ Start GapMouse from the Start Menu (installed) or run `GapMouse.exe` (portable).
 - **Hotkey:** `Ctrl+Alt+P` toggles between pause (never) and resume. You can change it in Settings.
 - **Close to tray:** the window's close button hides it; the app keeps running. The first time, a balloon tells you so. Quit with `Exit` in the tray menu or `Exit application` on the Home tab.
 - **Start minimized:** start with `--minimized`, or turn on "Start minimized" in Settings, to show only the tray icon. "Start with Windows" registers the app with `--minimized`.
+- **Locked screen:** the mouse stops moving while the session is locked (Win+L, auto lock). By default Windows then follows its normal power plan; turn on "Keep the PC awake while the screen is locked" in Settings to keep the system (not the display) awake.
 - **Single instance:** launching a second copy brings the running window to the front and exits.
 - **Tabs:** Home (state, today's stats, pause and resume), Logs (live activity log with filter, copy and open folder), Settings (engine, startup, theme, language, hotkey, logs) and About (version, update check, paths).
 

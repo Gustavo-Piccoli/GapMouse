@@ -17,13 +17,16 @@ public sealed class FakeEngineController : IEngineController
         null,
         null,
         null,
-        DailyStats.Empty(new DateOnly(2026, 1, 1)));
+        DailyStats.Empty(new DateOnly(2026, 1, 1)),
+        false);
 
     public List<PauseDuration> PauseCalls { get; } = [];
 
     public int ResumeCalls { get; private set; }
 
     public List<EngineSettings> ApplySettingsCalls { get; } = [];
+
+    public List<bool> SetSessionLockedCalls { get; } = [];
 
     public event EventHandler<EngineEventArgs>? EventRaised;
 
@@ -34,4 +37,6 @@ public sealed class FakeEngineController : IEngineController
     public void Resume() => ResumeCalls++;
 
     public void ApplySettings(EngineSettings settings) => ApplySettingsCalls.Add(settings);
+
+    public void SetSessionLocked(bool locked) => SetSessionLockedCalls.Add(locked);
 }

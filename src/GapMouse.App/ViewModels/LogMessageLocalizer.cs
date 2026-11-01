@@ -21,6 +21,8 @@ public static class LogMessageLocalizer
             EnginePaused => l.LogPausedIndefinitely,
             EngineResumed { Reason: ResumeReason.Manual } => l.LogResumedManual,
             EngineResumed => l.LogResumedExpired,
+            SessionLocked s => l.LogSessionLocked(s.KeepAwake),
+            SessionUnlocked => l.LogSessionUnlocked,
             SettingsChanged => l.LogSettingsChanged,
             EngineStopped => l.LogEngineStopped,
             _ => entry.Message,

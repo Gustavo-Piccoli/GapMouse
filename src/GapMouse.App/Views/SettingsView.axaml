@@ -75,6 +75,15 @@
             <ToggleSwitch Grid.Column="1" IsChecked="{Binding KeepDisplayOn}" OnContent="" OffContent="" VerticalAlignment="Center"
                           AutomationProperties.Name="{Binding L.SettingsKeepDisplayOn}" />
           </Grid>
+          <Border Classes="divider" />
+          <Grid Classes="row" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding L.SettingsKeepAwakeWhileLocked}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding L.SettingsKeepAwakeWhileLockedCaption}" Classes="caption" TextWrapping="Wrap" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding KeepAwakeWhileLocked}" OnContent="" OffContent="" VerticalAlignment="Center"
+                          AutomationProperties.Name="{Binding L.SettingsKeepAwakeWhileLocked}" />
+          </Grid>
           </StackPanel>
         </Border>
       </StackPanel>

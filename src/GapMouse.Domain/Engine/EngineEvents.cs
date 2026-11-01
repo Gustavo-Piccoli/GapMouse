@@ -18,6 +18,10 @@ public sealed record EnginePaused(DateTimeOffset At, PauseDuration Duration, Dat
 
 public sealed record EngineResumed(DateTimeOffset At, ResumeReason Reason) : EngineEvent(At);
 
+public sealed record SessionLocked(DateTimeOffset At, bool KeepAwake) : EngineEvent(At);
+
+public sealed record SessionUnlocked(DateTimeOffset At) : EngineEvent(At);
+
 public sealed record SettingsChanged(DateTimeOffset At, EngineSettings Settings) : EngineEvent(At);
 
 public sealed record EngineStopped(DateTimeOffset At) : EngineEvent(At);

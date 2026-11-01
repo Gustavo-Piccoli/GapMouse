@@ -38,6 +38,12 @@ public sealed partial class Localizer
 
     public string LogResumedExpired => T("Resumed (pause expired)", "Retomado (tempo esgotado)");
 
+    public string LogSessionUnlocked => T("Screen unlocked", "Tela desbloqueada");
+
+    public string LogSessionLocked(bool keepAwake) => keepAwake
+        ? T("Screen locked; movement stopped, system kept awake", "Tela bloqueada; movimento parado, sistema mantido acordado")
+        : T("Screen locked; movement stopped, power released", "Tela bloqueada; movimento parado, energia liberada");
+
     public string LogWaitingStarted(TimeSpan idle) =>
         string.Format(Culture, T("Waiting for {0} s of inactivity", "Aguardando {0} s de inatividade"), Seconds(idle));
 

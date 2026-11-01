@@ -25,7 +25,7 @@ public sealed class LogKindBrushConverter : IValueConverter
             LogKind.Waiting => Blue,
             LogKind.Moving => Green,
             LogKind.Return => Gray,
-            LogKind.Paused or LogKind.Resumed => Amber,
+            LogKind.Paused or LogKind.Resumed or LogKind.Locked or LogKind.Unlocked => Amber,
             LogKind.Config => Violet,
             LogKind.Stop or LogKind.Error => Red,
             LogKind.Warn => Orange,

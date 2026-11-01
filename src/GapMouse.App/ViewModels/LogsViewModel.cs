@@ -104,7 +104,7 @@ public sealed class LogsViewModel : ViewModelBase, IDisposable
     {
         LogFilter.All => true,
         LogFilter.Movement => kind is LogKind.Waiting or LogKind.Moving or LogKind.Return,
-        LogFilter.Pauses => kind is LogKind.Paused or LogKind.Resumed,
+        LogFilter.Pauses => kind is LogKind.Paused or LogKind.Resumed or LogKind.Locked or LogKind.Unlocked,
         LogFilter.System => kind is LogKind.Start or LogKind.Stop or LogKind.Config or LogKind.Warn or LogKind.Error,
         _ => true,
     };

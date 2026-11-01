@@ -41,7 +41,7 @@ internal static class Scenarios
         var ui = new ImmediateUiDispatcher();
         var settings = new InMemorySettingsService { FailToWrite = scenario == "settings-status" };
         var log = new InMemoryActivityLog();
-        foreach (var entry in scenario == "logs-empty" ? [] : LogEntries().Where(e => scenario != "logs-filtered" || e.Kind is not (LogKind.Paused or LogKind.Resumed)))
+        foreach (var entry in scenario == "logs-empty" ? [] : LogEntries().Where(e => scenario != "logs-filtered" || e.Kind is not (LogKind.Paused or LogKind.Resumed or LogKind.Locked or LogKind.Unlocked)))
         {
             log.Append(entry);
         }
@@ -120,6 +120,8 @@ internal static class Scenarios
         new(At(10, 15, 38), LogKind.Return, "User activity detected. Returning control to the user."),
         new(At(12, 1, 5), LogKind.Paused, "Paused for 1 hour by the user."),
         new(At(12, 1, 6), LogKind.Warn, "Port Cursor failed: Access denied."),
+        new(At(12, 30, 0), LogKind.Locked, "Screen locked; movement stopped, power released"),
+        new(At(12, 45, 10), LogKind.Unlocked, "Screen unlocked"),
         new(At(13, 2, 11), LogKind.Resumed, "Resumed after the pause."),
         new(At(13, 20, 50), LogKind.Moving, "Idle for 120 s. Moving the cursor to keep the PC awake."),
         new(At(13, 21, 3), LogKind.Return, "User activity detected. Returning control to the user."),

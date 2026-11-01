@@ -7,6 +7,7 @@ internal static partial class ShellTestNative
 {
     internal const uint WM_ENDSESSION = 0x0016;
     internal const uint WM_HOTKEY = 0x0312;
+    internal const uint WM_WTSSESSION_CHANGE = 0x02B1;
 
     [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
     internal static partial nint SendMessageW(nint hWnd, uint msg, nint wParam, nint lParam);
@@ -102,5 +103,71 @@ public sealed class ShellWindowTests
         ShellTestNative.SendMessageW(window.Handle, ShellTestNative.RegisterWindowMessageW("GapMouse.Activate"), 0, 0);
         failure.ShouldNotBeNull();
         ShellTestNative.SendMessageW(window.Handle, 0x0011, 0, 0).ShouldBe(1);
+    }
+
+    [Fact]
+    public void ShellWindow_RegistersAndUnregistersSessionNotifications()
+    {
+        Exception? failure = null;
+        var window = new ShellWindow();
+        window.HandlerFailed += e => failure = e;
+        var handle = window.Handle;
+
+        window.SessionNotificationFailure.ShouldBeNull();
+        var values = new List<bool>();
+        window.SessionLockChanged += (_, locked) => values.Add(locked);
+        ShellTestNative.SendMessageW(handle, ShellTestNative.WM_WTSSESSION_CHANGE, 0x7, 1);
+        values.ShouldBe([true]);
+
+        window.Dispose();
+        window.Dispose();
+
+        window.Handle.ShouldBe(0);
+        failure.ShouldBeNull();
+    }
+
+    [Fact]
+    public void QueryIsSessionLocked_ReturnsFalseInInteractiveSession()
+    {
+        ShellWindow.QueryIsSessionLocked().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void WtsSessionLock_RaisesSessionLockChangedTrue()
+    {
+        using var window = new ShellWindow();
+        var values = new List<bool>();
+        window.SessionLockChanged += (_, locked) => values.Add(locked);
+
+        ShellTestNative.SendMessageW(window.Handle, ShellTestNative.WM_WTSSESSION_CHANGE, 0x7, 1);
+
+        values.ShouldBe([true]);
+    }
+
+    [Fact]
+    public void WtsSessionUnlock_RaisesSessionLockChangedFalse()
+    {
+        using var window = new ShellWindow();
+        var values = new List<bool>();
+        window.SessionLockChanged += (_, locked) => values.Add(locked);
+
+        ShellTestNative.SendMessageW(window.Handle, ShellTestNative.WM_WTSSESSION_CHANGE, 0x8, 1);
+
+        values.ShouldBe([false]);
+    }
+
+    [Fact]
+    public void OtherWtsCodes_RaiseNothing()
+    {
+        using var window = new ShellWindow();
+        var raised = 0;
+        window.SessionLockChanged += (_, _) => raised++;
+
+        foreach (var code in new nint[] { 0x1, 0x2, 0x5, 0x6, 0x9 })
+        {
+            ShellTestNative.SendMessageW(window.Handle, ShellTestNative.WM_WTSSESSION_CHANGE, code, 1);
+        }
+
+        raised.ShouldBe(0);
     }
 }

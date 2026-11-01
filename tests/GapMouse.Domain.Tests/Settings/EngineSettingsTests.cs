@@ -58,4 +58,16 @@ public class EngineSettingsTests
     [Fact]
     public void Value_InvalidResult_Throws() =>
         Should.Throw<InvalidOperationException>(() => EngineSettings.Create(0, 1, 10, 25, 120, true).Value);
+
+    [Fact]
+    public void Default_KeepAwakeWhileLocked_IsFalse() =>
+        EngineSettings.Default.KeepAwakeWhileLocked.ShouldBeFalse();
+
+    [Fact]
+    public void Create_DefaultsKeepAwakeWhileLockedToFalse() =>
+        EngineSettings.Create(120, 1, 10, 25, 120, true).Value.KeepAwakeWhileLocked.ShouldBeFalse();
+
+    [Fact]
+    public void Create_SetsKeepAwakeWhileLocked() =>
+        EngineSettings.Create(120, 1, 10, 25, 120, true, keepAwakeWhileLocked: true).Value.KeepAwakeWhileLocked.ShouldBeTrue();
 }

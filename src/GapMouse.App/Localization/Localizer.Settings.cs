@@ -24,6 +24,12 @@ public sealed partial class Localizer
 
     public string SettingsKeepDisplayOn => T("Keep the display on", "Manter a tela ligada");
 
+    public string SettingsKeepAwakeWhileLocked =>
+        T("Keep the PC awake while the screen is locked", "Manter o PC acordado com a tela bloqueada");
+
+    public string SettingsKeepAwakeWhileLockedCaption =>
+        T("The mouse stays still while locked; the screen can turn off.", "O mouse fica parado com a tela bloqueada; a tela pode desligar.");
+
     public string SettingsStartWithWindows => T("Start with Windows", "Iniciar com o Windows");
 
     public string SettingsStartMinimized => T("Start minimized to the tray", "Iniciar minimizado na bandeja");

@@ -5,5 +5,13 @@ namespace GapMouse.Application.Tests.Fakes;
 
 internal sealed class FakeMonitors : IMonitorBoundsProvider
 {
-    public ScreenBounds GetBoundsAt(PixelPoint point) => new(0, 0, 1920, 1080);
+    private int _getCount;
+
+    public int GetCount => Volatile.Read(ref _getCount);
+
+    public ScreenBounds GetBoundsAt(PixelPoint point)
+    {
+        Interlocked.Increment(ref _getCount);
+        return new(0, 0, 1920, 1080);
+    }
 }

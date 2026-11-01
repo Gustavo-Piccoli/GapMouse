@@ -60,6 +60,22 @@ public sealed class App : Avalonia.Application
         services.GetRequiredService<ActivityLogWriter>();
         var persister = services.GetRequiredService<AppStatePersister>();
         persister.Start();
+
+        // The lock state goes in before the engine thread starts, so it never reads the cursor on a locked session.
+        // Subscribing before querying leaves no gap; a queued UNLOCK is processed later and wins.
+        var shellLogger = services.GetRequiredService<ILogger<ShellWindow>>();
+        shell.HandlerFailed += ex => AppLog.ShellHandlerFailed(shellLogger, ex);
+        if (shell.SessionNotificationFailure is { } notificationFailure)
+        {
+            AppLog.SessionNotificationsUnavailable(shellLogger, notificationFailure);
+        }
+
+        shell.SessionLockChanged += (_, locked) => host.SetSessionLocked(locked);
+        if (ShellWindow.QueryIsSessionLocked())
+        {
+            host.SetSessionLocked(true);
+        }
+
         host.Start();
         services.GetRequiredService<ThemeApplier>().Start();
 
@@ -70,10 +86,8 @@ public sealed class App : Avalonia.Application
         services.GetRequiredService<UpdateService>().Start(() => settings.Current.CheckForUpdates);
 
         var windows = services.GetRequiredService<IMainWindowService>();
-        var shellLogger = services.GetRequiredService<ILogger<ShellWindow>>();
         shell.ActivationRequested += (_, _) => windows.Show();
         shell.SessionEnding += (_, _) => services.GetRequiredService<IAppLifetime>().Exit();
-        shell.HandlerFailed += ex => AppLog.ShellHandlerFailed(shellLogger, ex);
 
         if (!(options.Minimized || settings.Current.StartMinimized))
         {

@@ -15,6 +15,7 @@ public sealed unsafe class ShellWindow : IDisposable
     private static bool s_classRegistered;
 
     private GCHandle _self;
+    private bool _sessionNotificationsRegistered;
 
     public ShellWindow()
     {
@@ -28,9 +29,25 @@ public sealed unsafe class ShellWindow : IDisposable
             _self.Free();
             throw new InvalidOperationException($"Could not create the shell window (error {error}).");
         }
+
+        if (WTSRegisterSessionNotification(Handle, NOTIFY_FOR_THIS_SESSION))
+        {
+            _sessionNotificationsRegistered = true;
+        }
+        else
+        {
+            SessionNotificationFailure = new InvalidOperationException(
+                $"Could not register for session notifications (error {Marshal.GetLastPInvokeError()}).");
+        }
     }
 
     public nint Handle { get; private set; }
+
+    /// <summary>
+    /// Set when registering for session (lock) notifications failed; the window works without them,
+    /// and the app then behaves as before the lock pause. Not retried.
+    /// </summary>
+    public Exception? SessionNotificationFailure { get; }
 
     /// <summary>Raised when a second launch asks this instance to show its window.</summary>
     public event EventHandler? ActivationRequested;
@@ -38,8 +55,50 @@ public sealed unsafe class ShellWindow : IDisposable
     /// <summary>Raised synchronously when Windows is logging off or shutting down.</summary>
     public event EventHandler? SessionEnding;
 
+    /// <summary>Raised when the session is locked (true) or unlocked (false).</summary>
+    public event EventHandler<bool>? SessionLockChanged;
+
     /// <summary>Raised when an event handler or message observer threw; the exception is otherwise contained.</summary>
     public event Action<Exception>? HandlerFailed;
+
+    /// <summary>
+    /// Returns whether the current session is locked; false when it cannot be determined.
+    /// </summary>
+    public static bool QueryIsSessionLocked()
+    {
+        nint buffer = 0;
+        try
+        {
+            if (!WTSQuerySessionInformationW(0, WTS_CURRENT_SESSION, WTSSessionInfoEx, out buffer, out var bytes)
+                || buffer == 0
+                || bytes < 20)
+            {
+                return false;
+            }
+
+            // WTSINFOEXW: Level (int) at 0, then the 8-aligned level-1 data at 8:
+            // SessionId at 8, SessionState at 12, SessionFlags at 16.
+            if (Marshal.ReadInt32(buffer, 0) != 1)
+            {
+                return false;
+            }
+
+            return Marshal.ReadInt32(buffer, 16) == WTS_SESSIONSTATE_LOCK;
+        }
+#pragma warning disable CA1031 // Any failure means "not known to be locked".
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            return false;
+        }
+        finally
+        {
+            if (buffer != 0)
+            {
+                WTSFreeMemory(buffer);
+            }
+        }
+    }
 
     internal static uint ActivateMessage { get; } = RegisterWindowMessageW("GapMouse.Activate");
 
@@ -57,6 +116,12 @@ public sealed unsafe class ShellWindow : IDisposable
         }
 
         Handle = 0;
+        if (_sessionNotificationsRegistered)
+        {
+            _sessionNotificationsRegistered = false;
+            WTSUnRegisterSessionNotification(handle);
+        }
+
         DestroyWindow(handle);
         if (_self.IsAllocated)
         {
@@ -145,6 +210,20 @@ public sealed unsafe class ShellWindow : IDisposable
     {
         MessageReceived?.Invoke(msg, wParam, lParam);
         result = 0;
+        if (msg == WM_WTSSESSION_CHANGE)
+        {
+            if (wParam == WTS_SESSION_LOCK)
+            {
+                SessionLockChanged?.Invoke(this, true);
+            }
+            else if (wParam == WTS_SESSION_UNLOCK)
+            {
+                SessionLockChanged?.Invoke(this, false);
+            }
+
+            return true;
+        }
+
         if (msg == WM_QUERYENDSESSION)
         {
             result = 1;

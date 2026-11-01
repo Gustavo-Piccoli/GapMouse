@@ -34,6 +34,7 @@ public sealed class SettingsViewModel : ViewModelBase, IDisposable
     private string _retentionText = string.Empty;
     private string _hotkeyText = string.Empty;
     private bool _keepDisplayOn;
+    private bool _keepAwakeWhileLocked;
     private bool _startWithWindows;
     private bool _startMinimized;
     private bool _notificationsEnabled;
@@ -126,6 +127,12 @@ public sealed class SettingsViewModel : ViewModelBase, IDisposable
     {
         get => _keepDisplayOn;
         set => Edit(ref _keepDisplayOn, value);
+    }
+
+    public bool KeepAwakeWhileLocked
+    {
+        get => _keepAwakeWhileLocked;
+        set => Edit(ref _keepAwakeWhileLocked, value);
     }
 
     public bool StartWithWindows
@@ -348,6 +355,7 @@ public sealed class SettingsViewModel : ViewModelBase, IDisposable
             RetentionText = s.LogRetentionDays.ToString(culture);
             HotkeyText = s.PauseHotkey;
             KeepDisplayOn = s.Engine.KeepDisplayOn;
+            KeepAwakeWhileLocked = s.Engine.KeepAwakeWhileLocked;
             StartWithWindows = s.StartWithWindows;
             StartMinimized = s.StartMinimized;
             NotificationsEnabled = s.NotificationsEnabled;
@@ -465,7 +473,7 @@ public sealed class SettingsViewModel : ViewModelBase, IDisposable
             errors[fields[i].Field] = L.SettingsErrorNotNumber;
         }
 
-        var result = EngineSettings.Create(values[0], values[1], values[2], values[3], values[4], KeepDisplayOn);
+        var result = EngineSettings.Create(values[0], values[1], values[2], values[3], values[4], KeepDisplayOn, KeepAwakeWhileLocked);
         var rangeUnknown = unparsed.Contains(SettingsField.MovementIntervalMin)
             || unparsed.Contains(SettingsField.MovementIntervalMax);
         foreach (var error in result.Errors)
@@ -501,7 +509,7 @@ public sealed class SettingsViewModel : ViewModelBase, IDisposable
             return false;
         }
 
-        var engine = EngineSettings.Create(idle, check, min, max, amplitude, KeepDisplayOn);
+        var engine = EngineSettings.Create(idle, check, min, max, amplitude, KeepDisplayOn, KeepAwakeWhileLocked);
         if (!engine.IsValid
             || retention is < AppSettings.MinLogRetentionDays or > AppSettings.MaxLogRetentionDays)
         {
