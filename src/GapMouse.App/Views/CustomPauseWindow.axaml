@@ -6,14 +6,15 @@
         Title="{Binding L.CustomPauseTitle}"
         Icon="avares://GapMouse/Assets/Icons/gapmouse.ico"
         Width="340" SizeToContent="Height"
+        Background="{DynamicResource GmGroundBrush}"
         CanResize="False"
         WindowStartupLocation="CenterOwner">
-  <StackPanel Margin="20" Spacing="10">
+  <StackPanel Margin="24" Spacing="12">
     <TextBlock Text="{Binding L.CustomPausePrompt}" TextWrapping="Wrap" />
     <TextBox Text="{Binding MinutesText, Mode=TwoWay}" />
     <TextBlock Text="{Binding Error}" Classes="error" MinHeight="18" />
     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-      <Button Content="{Binding L.Ok}" IsDefault="True" IsEnabled="{Binding CanConfirm}" Click="OnOk" />
+      <Button Classes="accent" Content="{Binding L.Ok}" IsDefault="True" IsEnabled="{Binding CanConfirm}" Click="OnOk" />
       <Button Content="{Binding L.Cancel}" IsCancel="True" Click="OnCancel" />
     </StackPanel>
   </StackPanel>
