@@ -9,6 +9,10 @@
     <v:LogKindInkConverter x:Key="KindInk" />
   </UserControl.Resources>
   <UserControl.Styles>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="6,4" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
     <Style Selector="TextBlock.icon">
       <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
       <Setter Property="FontSize" Value="14" />
@@ -52,7 +56,7 @@
                  IsVisible="{Binding !!Lines.Count}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:LogLineViewModel">
-              <Grid ColumnDefinitions="Auto,76,*" ColumnSpacing="10" Margin="4,2">
+              <Grid ColumnDefinitions="Auto,76,*" ColumnSpacing="10">
                 <TextBlock Text="{Binding Time}" FontFamily="{DynamicResource GmFontMono}"
                            FontFeatures="tnum" Classes="muted" VerticalAlignment="Top" />
                 <Border Grid.Column="1" Width="76" VerticalAlignment="Top"

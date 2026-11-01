@@ -15,7 +15,7 @@ internal sealed record Scene(Localizer Localizer, MainWindowViewModel Main, IDis
 internal static class Scenarios
 {
     public static readonly string[] Names =
-        ["home-waiting", "home-moving", "home-paused", "logs", "settings", "about", "custom-pause"];
+        ["home-waiting", "home-moving", "home-paused", "logs", "logs-empty", "settings", "about", "custom-pause"];
 
     // The fake clock uses UTC as its local zone, so every offset below is zero.
     private static readonly DateTimeOffset Now = new(2026, 11, 1, 14, 32, 10, TimeSpan.Zero);
@@ -23,7 +23,7 @@ internal static class Scenarios
     public static int TabIndex(string scenario) => scenario switch
     {
         "home-waiting" or "home-moving" or "home-paused" => 0,
-        "logs" => 1,
+        "logs" or "logs-empty" => 1,
         "settings" => 2,
         "about" => 3,
         _ => 0,
@@ -41,7 +41,7 @@ internal static class Scenarios
         var ui = new ImmediateUiDispatcher();
         var settings = new InMemorySettingsService();
         var log = new InMemoryActivityLog();
-        foreach (var entry in LogEntries())
+        foreach (var entry in scenario == "logs-empty" ? [] : LogEntries())
         {
             log.Append(entry);
         }
